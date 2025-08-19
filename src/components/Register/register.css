@@ -1,0 +1,146 @@
+.register-container {
+  background-color: #f0f3fa;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.register-box {
+  background-color: white;
+  width: 80%;
+  max-width: 1000px;
+  display: flex;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.register-left,
+.register-right {
+  flex: 1;
+  padding: 40px 30px;
+}
+
+.register-logo {
+  width: 130px;
+  margin-bottom: 20px;
+}
+
+h2 {
+  margin: 0;
+}
+
+.register-left p {
+  margin-top: 10px;
+}
+
+.register-form label {
+  display: block;
+  margin: 15px 0 5px;
+  font-weight: 500;
+}
+
+.register-form input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+.password-field {
+  position: relative;
+  width: 100%;
+}
+
+.password-field input {
+  padding-right: 40px;
+  padding-left: 10px;
+  height: 40px;
+}
+
+.toggle-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.register-btn {
+  width: 100%;
+  background-color: #1c7c63;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  margin-top: 20px;
+  cursor: pointer;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: flex-end;
+  gap: 20px;
+  font-size: 12px;
+  margin-top: 30px;
+}
+
+@media (max-width: 768px) {
+  .register-box {
+    flex-direction: column;
+    width: 90%;
+    padding: 20px;
+  }
+
+  .register-left,
+  .register-right {
+    padding: 20px;
+  }
+
+  .register-logo {
+    width: 100px;
+    margin: 0 auto 20px;
+    display: block;
+  }
+
+  h2 {
+    text-align: center;
+    font-size: 22px;
+  }
+
+  .register-left p {
+    text-align: center;
+    font-size: 14px;
+  }
+
+  .footer-links {
+    justify-content: center;
+    font-size: 11px;
+    margin-top: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .register-form label {
+    font-size: 14px;
+  }
+
+  .register-form input {
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  .register-btn {
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  .toggle-btn {
+    top: 50%;
+  }
+}

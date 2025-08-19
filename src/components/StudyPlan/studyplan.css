@@ -1,0 +1,29 @@
+.study-plan {
+  /* max-width: 500px; */
+  margin: 30px auto;
+  padding: 20px;
+  /* background-color: #f9f9fb; */
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.study-plan h2 {
+  text-align: center;
+  color: #2d3748;
+  margin-bottom: 20px;
+}
+
+.study-plan ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.study-day {
+  background-color: #e2e8f0;
+  margin-bottom: 10px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 16px;
+  color: #1a202c;
+}

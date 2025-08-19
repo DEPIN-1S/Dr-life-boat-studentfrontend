@@ -1,0 +1,128 @@
+.lesson-container {
+  padding: 20px;
+  /* max-width: 800px; */
+  margin: auto;
+}
+
+.tabs {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+}
+
+.tabs button {
+  padding: 10px 15px;
+  background: #f2f2f2;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.tabs .active {
+  background-color: #fff;
+  border: 2px solid #1c7c63;
+  color: #1c7c63;
+}
+
+.count {
+  background: #1c7c63;
+  color: #fff;
+  margin-left: 6px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.lesson-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fafafa;
+  padding: 10px;
+  margin: 5px 0;
+  border-radius: 10px;
+}
+.lesson-header,
+.lesson-subheader {
+  background: #f0f0f0;
+  padding: 12px;
+  margin-top: 10px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  border-radius: 4px;
+}
+
+.lesson-topic {
+  background: #f9f9f9;
+  border-left: 3px solid #cb771e;
+  border-radius: 6px;
+  overflow: hidden;
+  transition: background 0.3s ease;
+}
+
+.lesson-subtopic {
+  background: #f9f9f9;
+  margin-left: 2px;
+  margin-top: 8px;
+  border-left: 3px solid #1c7c63;
+  border-radius: 6px;
+  overflow: hidden;
+  transition: background 0.3s ease;
+}
+
+.lesson-subtopic:hover {
+  background: #f1f1f1;
+}
+
+.lesson-subtopic .lesson-subheader {
+  padding: 10px 12px;
+  background-color: #eafaf6;
+  color: #1c7c63;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.lesson-subtopic .lesson-subheader:hover {
+  background-color: #d4f0e7;
+}
+
+/* Files inside subtopic */
+.lesson-subtopic-files {
+  margin-left: 20px;
+  padding: 10px 0;
+}
+
+/* File entry inside .lesson-subtopic-files */
+.lesson-subtopic-files .lesson-subtopic {
+  background: #fff;
+  border-left: 2px dashed #ccc;
+  margin: 4px 0;
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 4px;
+  font-size: 14px;
+}
+@media (max-width: 468px) {
+  .lesson-container {
+    padding: 0px;
+  }
+  .lesson-subtopic {
+    background: #f9f9f9;
+    /* margin-left: 30px; */
+    margin-top: 8px;
+    border-left: 3px solid #1c7c63;
+    border-radius: 6px;
+    overflow: hidden;
+    transition: background 0.3s ease;
+  }
+}

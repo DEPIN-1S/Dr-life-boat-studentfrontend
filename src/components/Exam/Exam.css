@@ -1,0 +1,55 @@
+.exam-grid-container {
+  padding: 20px;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f9f9f9;
+}
+
+.exam-grid-title {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.exam-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.exam-card {
+  background-color: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease;
+  cursor: pointer;
+  max-width: 300px;
+}
+
+.exam-card:hover {
+  transform: translateY(-5px);
+}
+
+.exam-image {
+  width: 100%;
+  height: 150px;
+  min-height: 150px;
+  object-fit: contain;
+}
+
+.exam-info {
+  padding: 15px;
+  text-align: center;
+}
+
+.exam-name {
+  font-size: 18px;
+  color: #222;
+  margin: 0 0 10px 0;
+}
+
+.exam-time {
+  font-size: 14px;
+  color: #666;
+}

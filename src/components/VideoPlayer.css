@@ -1,0 +1,24 @@
+.speed-2x-btn::before {
+  content: '2x';
+  font-size: 14px;
+  padding: 0 5px;
+}
+
+.speed-3x-btn::before {
+  content: '3x';
+  font-size: 14px;
+  padding: 0 5px;
+}
+
+.speed-1x-btn::before {
+  content: '1x';
+  font-size: 14px;
+  padding: 0 5px;
+}
+/* .vjs-icon-replay:before {
+  content: '\f04a';
+} */
+
+.vjs-icon-forward:before {
+  content: '\f04e';
+}

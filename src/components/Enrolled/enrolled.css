@@ -1,0 +1,75 @@
+.enrolled-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.enrolled-card {
+  background-color: white;
+  color: rgb(42, 40, 40);
+  border-radius: 8px;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  /* max-width: 30%; */
+}
+
+.enrolled-image {
+  width: 100%;
+  height: 220px;
+  display: block;
+  object-fit: contain;
+}
+
+.enrolled-info {
+  padding: 10px;
+}
+
+.enrolled-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 8px 0 4px;
+}
+
+.enrolled-author {
+  font-size: 14px;
+  color: #aaa;
+  margin-bottom: 6px;
+}
+
+.enrolled-rating {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.rating,
+.stars {
+  color: #f39c12;
+  margin-right: 4px;
+}
+
+.review-count {
+  color: #aaa;
+}
+
+.enrolled-price {
+  font-size: 16px;
+  font-weight: bold;
+}
+.course-details-button {
+  width: 90%;
+  background-color: #1c7c63;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  text-align: center;
+
+  display: block;
+  margin: 0 auto;
+}

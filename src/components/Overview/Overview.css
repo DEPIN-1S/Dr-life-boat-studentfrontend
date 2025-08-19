@@ -1,0 +1,89 @@
+.overview-container {
+  /* max-width: 600px; */
+  /* margin: 20px auto; */
+  font-family: Arial, sans-serif;
+  color: #333;
+  padding: 0 16px;
+}
+
+.section {
+  margin-bottom: 30px;
+}
+
+.section-title {
+  font-size: 18px;
+  border-left: 4px solid #1c7c63;
+  padding-left: 10px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.section-description {
+  font-size: 15px;
+  color: #555;
+  margin-bottom: 10px;
+  text-align: justify;
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  padding: 0;
+}
+
+.benefits-list,
+.learn-list {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 10px;
+}
+.fontsize {
+  font-size: 15px;
+}
+
+.icon {
+  margin-right: 8px;
+}
+
+.gold {
+  color: #f0ad4e;
+}
+
+.green {
+  color: #28a745;
+}
+
+.instructor-section {
+  border-top: 1px solid #ccc;
+  padding-top: 20px;
+}
+
+.instructor-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.instructor-logo {
+  background-color: #b0006d;
+  color: white;
+  border-radius: 60%;
+  padding: 10px 14px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.ratings {
+  font-size: 13px;
+  color: #777;
+  display: flex;
+  gap: 12px;
+  margin-top: 5px;
+}
