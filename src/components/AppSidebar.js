@@ -64,10 +64,7 @@ const AppSidebar = () => {
         }}
         style={{ backgroundColor: '#ffffff' }}
       >
-        <CSidebarHeader
-          className="border-bottom"
-          style={{ backgroundColor: '#ffffff' }}
-        >
+        <CSidebarHeader className="border-bottom" style={{ backgroundColor: '#ffffff' }}>
           <CSidebarBrand to="/">
             {/* <img
               src={logo}
