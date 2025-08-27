@@ -1,59 +1,3 @@
-/* .exam-grid-container {
-  padding: 20px;
-  font-family: 'Segoe UI', sans-serif;
-  background-color: #f9f9f9;
-}
-
-.exam-grid-title {
-  text-align: center;
-  font-size: 24px;
-  margin-bottom: 30px;
-  color: #333;
-}
-
-.exam-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 20px;
-}
-
-.exam-card {
-  background-color: #fff;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
-  transition: transform 0.3s ease;
-  cursor: pointer;
-  max-width: 300px;
-}
-
-.exam-card:hover {
-  transform: translateY(-5px);
-}
-
-.exam-image {
-  width: 100%;
-  height: 150px;
-  min-height: 150px;
-  object-fit: contain;
-}
-
-.exam-info {
-  padding: 15px;
-  text-align: center;
-}
-
-.exam-name {
-  font-size: 18px;
-  color: #222;
-  margin: 0 0 10px 0;
-}
-
-.exam-time {
-  font-size: 14px;
-  color: #666;
-} */
-
 
 
 
@@ -113,3 +57,115 @@
   color: #666;
 }
 
+/*
+ .exam-grid-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.exam-grid-title {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.exam-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 40px;
+  justify-items: center;
+}
+
+.exam-card {
+  position: relative;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.2s;
+  cursor: pointer;
+  width: 350px;
+  height: 280px;
+  display: flex;
+  flex-direction: column;
+}
+
+.exam-card:hover {
+  transform: translateY(-4px);
+}
+
+.exam-card.completed {
+  opacity: 0.9;
+}
+
+.completed-label {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #28a745;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  z-index: 1;
+}
+
+.check-icon {
+  font-size: 14px;
+}
+
+.exam-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-bottom: 1px solid #eee;
+}
+
+.exam-info {
+  padding: 15px;
+  text-align: center;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.exam-name {
+  font-size: 18px;
+  margin: 0 0 10px;
+  color: #333;
+  font-weight: bold;
+}
+
+.exam-time, .exam-accuracy {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+  background: #e9f5ff;
+  padding: 5px 10px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+/* Responsive adjustments */
+/* @media (max-width: 768px) {
+  .exam-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .exam-card {
+    width: 100%;
+    max-width: 350px;
+  }
+} */ */
+
+
+
+/* not used that  this code no need in css */

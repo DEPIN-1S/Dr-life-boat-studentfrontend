@@ -1,204 +1,221 @@
-/* ✅ Base styles remain same */
+/* Add these custom styles alongside Bootstrap */
 
-.lessonPlayer-wrapper {
-  display: flex;
-  height: 100vh;
-  overflow: hidden;
+.hover-shadow:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(-1px);
 }
 
-.lessonPlayer-left {
-  flex: 3;
-  padding: 20px;
-  overflow-y: auto;
-  background: #f9f9f9;
+.transition-all {
+  transition: all 0.2s ease-in-out;
 }
 
-.lessonPlayer-sidebar {
-  flex: 1;
-  padding: 20px;
-  border-left: 1px solid #ddd;
-  background: #fff;
-  overflow-y: auto;
-}
-
-.lessonPlayer-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-}
-
-.lessonPlayer-back-btn {
-  background: transparent;
-  border: none;
-  font-size: 18px;
-  font-weight: bold;
-  color: #333;
+.cursor-pointer {
   cursor: pointer;
 }
 
-.lessonPlayer-media-wrapper {
-  width: 100%;
-}
-
-.lessonPlayer-iframe {
-  width: 100%;
-  height: 600px;
-  border: none;
-  border-radius: 6px;
-}
-
-.lessonPlayer-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.lessonPlayer-item {
-  padding: 10px;
-  border-radius: 8px;
-  background: #f9f9f9;
-  cursor: pointer;
-  transition: background 0.2s ease;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.lessonPlayer-item:hover {
-  background: #f1f1f1;
-}
-
-.lessonPlayer-item.active {
-  background: #e3f0ff;
-}
-
-.lessonPlayer-file-name {
-  font-weight: 500;
-  color: #111;
-}
-
-.lessonPlayer-file-type {
-  font-size: 12px;
-  color: #777;
-}
-.new-video {
-  width: 100%;
-  height: 580px;
-}
-
-/* ✅ Tablet responsive */
-@media (max-width: 1024px) {
-  .lessonPlayer-wrapper {
-    flex-direction: column;
-    height: auto;
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+  .col-md-2 {
+    position: fixed;
+    left: -250px;
+    width: 250px;
+    height: 100vh;
+    z-index: 1000;
+    transition: left 0.3s ease-in-out;
   }
 
-  .lessonPlayer-left {
-    flex: unset;
-    width: 100%;
-    padding: 15px;
+  .col-md-2.show {
+    left: 0;
   }
 
-  .lessonPlayer-sidebar {
-    flex: unset;
-    width: 100%;
-    border-left: none;
-    border-top: 1px solid #ddd;
-    padding: 15px;
+  .col-md-7 {
+    margin-left: 0;
   }
 
-  .lessonPlayer-iframe {
-    height: 400px;
+  .col-md-3 {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40vh;
+    z-index: 999;
+    transform: translateY(100%);
+    transition: transform 0.3s ease-in-out;
   }
-}
 
-/* ✅ YOUTUBE-LIKE MOBILE STYLE */
-@media (max-width: 768px) {
-  /* Video player fixed like YouTube */
-  .lessonPlayer-left {
+  .col-md-3.show {
+    transform: translateY(0);
+  }
+
+  /* Mobile header adjustments */
+  .mobile-header {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    background: #000;
-    z-index: 100;
-    padding: 0;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    right: 0;
+    z-index: 1001;
+    background: white;
+    border-bottom: 1px solid #dee2e6;
   }
 
-  .lessonPlayer-header {
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    right: 8px;
-    display: flex;
-    justify-content: space-between;
-    color: #fff;
+  .mobile-content {
+    margin-top: 60px;
+    margin-bottom: 50px;
   }
 
-  .lessonPlayer-back-btn {
-    background: rgba(0, 0, 0, 0.5);
-    color: #fff;
-    padding: 6px 10px;
-    border-radius: 50%;
-  }
-
-  .lessonPlayer-iframe {
-    width: 100%;
-    height: 400px;
-  }
-
-  .lessonPlayer-sidebar {
-    margin-top: 220px;
-    height: calc(100vh - 220px);
-    overflow-y: auto;
-    padding: 12px;
-    background: #fff;
-  }
-
-  /* Lessons like YouTube “Up Next” cards */
-  .lessonPlayer-item {
-    padding: 10px;
-    border-radius: 6px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    border-bottom: 1px solid #eee;
-    background: transparent;
-  }
-
-  .lessonPlayer-item:hover {
-    background: #fafafa;
-  }
-
-  .lessonPlayer-file-name {
-    font-size: 15px;
-    font-weight: 500;
-  }
-
-  .lessonPlayer-file-type {
-    font-size: 12px;
-    color: #999;
+  /* Mobile bottom nav */
+  .mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1px solid #dee2e6;
+    z-index: 1000;
+    height: 50px;
   }
 }
 
-/* ✅ Even smaller phones */
-@media (max-width: 480px) {
-  .lessonPlayer-iframe {
-    height: 200px;
+/* Custom scrollbar */
+.overflow-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-auto::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.overflow-auto::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.overflow-auto::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* File type icons */
+.file-type-pdf::before {
+  content: "📄";
+  margin-right: 8px;
+}
+
+.file-type-mp4::before,
+.file-type-mov::before,
+.file-type-avi::before,
+.file-type-mkv::before {
+  content: "🎥";
+  margin-right: 8px;
+}
+
+.file-type-ppt::before,
+.file-type-pptx::before {
+  content: "📊";
+  margin-right: 8px;
+}
+
+
+/* Add these custom styles alongside Bootstrap */
+
+.hover-shadow:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(-1px);
+}
+
+.hover-bg-light:hover {
+  background-color: #f8f9fa !important;
+}
+
+.transition-all {
+  transition: all 0.2s ease-in-out;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* Mobile responsive improvements */
+@media (max-width: 991.98px) {
+  /* Full width on mobile */
+  .col-lg-9 {
+    width: 100% !important;
   }
 
-  .lessonPlayer-sidebar {
-    margin-top: 315px;
-    height: calc(100vh - 200px);
+  /* Mobile header improvements */
+  .fs-6 {
+    font-size: 0.9rem !important;
   }
 
-  .lessonPlayer-file-name {
-    font-size: 14px;
+  /* Content padding adjustments */
+  .p-2 {
+    padding: 0.5rem !important;
   }
-  .new-video {
-    width: 100%;
-    height: 400px;
+}
+
+@media (max-width: 767.98px) {
+  /* Smaller text on mobile */
+  .fs-md-4 {
+    font-size: 1.1rem !important;
+  }
+
+  /* Adjust video/iframe heights for mobile */
+  iframe, video {
+    height: 250px !important;
+  }
+
+  /* PDF viewer mobile adjustments */
+  .pdf-mobile {
+    height: 400px !important;
+  }
+}
+
+@media (max-width: 575.98px) {
+  /* Extra small devices */
+  iframe, video {
+    height: 200px !important;
+  }
+
+  .pdf-mobile {
+    height: 300px !important;
+  }
+}
+
+/* Custom scrollbar */
+.overflow-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-auto::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.overflow-auto::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.overflow-auto::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Offcanvas custom styles */
+.offcanvas-end {
+  width: 320px !important;
+}
+
+@media (max-width: 575.98px) {
+  .offcanvas-end {
+    width: 100% !important;
+  }
+}
+
+/* Better mobile touch targets */
+@media (max-width: 767.98px) {
+  .cursor-pointer {
+    min-height: 48px;
+    display: flex;
+    align-items: center;
   }
 }
