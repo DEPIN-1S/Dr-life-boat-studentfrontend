@@ -57,6 +57,7 @@ const CourseCard = () => {
         return null
     }
   }
+
   const hashtag = React.useMemo(() => {
     try {
       return courseDetails?.hashtags ? JSON.parse(courseDetails.hashtags) : []
@@ -65,137 +66,120 @@ const CourseCard = () => {
       return []
     }
   }, [courseDetails])
+
   return (
-    <div className="course-card">
-      <div>
-        {console.log(selectedFile, 'selectedFile')}
-        {selectedFile ? (
-          <div className="course-description-media">
-            {selectedFile.type.includes('mp4', 'mov', 'avi', 'mkv') ? (
-              // <video
-              //   className="course-description-image"
-              //   controls
-              //   autoPlay
-              //   src={selectedFile.url}
-              //   onContextMenu={(e) => e.preventDefault()}
-              //   controlsList="nodownload noplaybackrate"
-              //   disablePictureInPicture
-              //   style={{ width: '100%', height: 'auto' }}
-              // />
-              <VideoPlayer videoSources={selectedFile.url} />
-            ) : selectedFile.type === 'pdf' ? (
-              <iframe
-                src={`${selectedFile.url}#toolbar=0&navpanes=0&scrollbar=0`}
-                title="PDF Viewer"
-                style={{
-                  width: '100%',
-                  height: '600px',
-                  border: 'none',
-                }}
-                sandbox="allow-same-origin allow-scripts"
-                allow="fullscreen"
-              ></iframe>
-            ) : selectedFile.type === 'ppt' || selectedFile.type === 'pptx' ? (
-              <iframe
-                src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(
-                  selectedFile.url,
-                )}`}
-                title="PPT Viewer"
-                style={{ width: '100%', height: '600px', border: 'none' }}
-                sandbox="allow-same-origin allow-scripts"
-              />
-            ) : selectedFile.url.includes('google') ? (
-              <div style={{ width: '100%', height: '580px', position: 'relative' }}>
+    <div className="course-description-container">
+      <div className="course-card">
+        <div className="media-container">
+          {console.log(selectedFile, 'selectedFile')}
+          {selectedFile ? (
+            <div className="course-description-media">
+              {selectedFile.type.includes('mp4', 'mov', 'avi', 'mkv') ? (
+                <VideoPlayer videoSources={selectedFile.url} />
+              ) : selectedFile.type === 'pdf' ? (
                 <iframe
-                  src={selectedFile.url}
-                  width="100%"
-                  height="580"
-                  allow="autoplay"
-                  title="Drive Content"
-                  allowFullScreen={true}
-                  style={{ border: 'none' }}
+                  src={`${selectedFile.url}#toolbar=0&navpanes=0&scrollbar=0`}
+                  title="PDF Viewer"
+                  className="responsive-iframe"
                   sandbox="allow-same-origin allow-scripts"
+                  allow="fullscreen"
                 ></iframe>
+              ) : selectedFile.type === 'ppt' || selectedFile.type === 'pptx' ? (
+                <iframe
+                  src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(
+                    selectedFile.url,
+                  )}`}
+                  title="PPT Viewer"
+                  className="responsive-iframe"
+                  sandbox="allow-same-origin allow-scripts"
+                />
+              ) : selectedFile.url.includes('google') ? (
+                <div className="google-drive-container">
+                  <iframe
+                    src={selectedFile.url}
+                    allow="autoplay"
+                    title="Drive Content"
+                    allowFullScreen={true}
+                    className="responsive-iframe"
+                    sandbox="allow-same-origin allow-scripts"
+                  ></iframe>
 
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '10px',
-                    right: '10px',
-                    zIndex: 10,
-                  }}
-                >
-                  <img
-                    src="/logo1.png"
-                    alt="Company Logo"
-                    style={{ height: '50px', width: 'auto', opacity: 0.9 }}
-                  />
+                  <div className="watermark-logo">
+                    <img
+                      src="/logo1.png"
+                      alt="Company Logo"
+                      className="logo-image"
+                    />
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <p>Unsupported file type</p>
-            )}
+              ) : (
+                <p className="unsupported-file">Unsupported file type</p>
+              )}
+            </div>
+          ) : (
+            <img
+              className="course-description-image"
+              src={`${import.meta.env.VITE_BASE_URL}/${courseDetails?.image}`}
+              alt="Course"
+            />
+          )}
+        </div>
+
+        <div className="course-content">
+          <div className="badge-container">
+            <span className="badge premium">PREMIUM</span>
+            <span className="badge recorded">RECORDED</span>
           </div>
-        ) : (
-          <img
-            className="course-description-image"
-            src={`${import.meta.env.VITE_BASE_URL}/${courseDetails?.image}`}
-            alt="Course"
-          />
-        )}
+
+          <h3 className="course-title">{courseDetails?.heading}</h3>
+
+          <div className="tags">
+            {hashtag?.map((feature, index) => (
+              <span key={index} className="tag">{feature}</span>
+            ))}
+          </div>
+
+          <div className="rating-section">
+            <span className="rating">0.0</span>
+            <span className="stars">★★★★★</span>
+            <span className="details">(0 ratings)</span>
+            <span className="students">(14 Students)</span>
+          </div>
+
+          <div className="price-section">
+            <div className="price-info">
+              <span className="price">
+                ₹{courseDetails?.fee}
+                <span className="original-price">₹5000</span>
+              </span>
+            </div>
+            <button className="buy-btn">Buy Now</button>
+          </div>
+
+          <div className="tabs">
+            <button
+              className={`tab-button ${activeTab === 'overview' ? 'active-tab' : ''}`}
+              onClick={() => setActiveTab('overview')}
+            >
+              Overview
+            </button>
+            <button
+              className={`tab-button ${activeTab === 'lessons' ? 'active-tab' : ''}`}
+              onClick={() => setActiveTab('lessons')}
+            >
+              Modules
+            </button>
+            <button
+              className={`tab-button ${activeTab === 'studyPlan' ? 'active-tab' : ''}`}
+              onClick={() => setActiveTab('studyPlan')}
+            >
+              Study Plan
+            </button>
+          </div>
+
+          <div className="course-description">{renderTabContent()}</div>
+        </div>
       </div>
-
-      <div className="badge-container">
-        <span className="badge premium">PREMIUM</span>
-        <span className="badge recorded">RECORDED</span>
-      </div>
-
-      <h3 className="course-title">{courseDetails?.heading}</h3>
-
-      <div className="tags">
-        {hashtag?.map((feature, index) => (
-          <span key={index}>{feature}</span>
-        ))}
-      </div>
-
-      <div className="rating-section">
-        <span className="rating">0.0</span>
-        <span className="stars">★★★★★</span>
-        <span className="details">(0 ratings)</span>
-        <span className="students">(14 Students)</span>
-      </div>
-
-      <div className="price-section">
-        <span className="price">
-          ₹{courseDetails?.fee}
-          <span className="original-price">₹5000</span>
-        </span>
-
-        <button className="buy-btn">Buy Now</button>
-      </div>
-
-      <div className="tabs">
-        <button
-          className={activeTab === 'overview' ? 'active-tab' : ''}
-          onClick={() => setActiveTab('overview')}
-        >
-          Overview
-        </button>
-        <button
-          className={activeTab === 'lessons' ? 'active-tab' : ''}
-          onClick={() => setActiveTab('lessons')}
-        >
-          Modules
-        </button>
-        <button
-          className={activeTab === 'studyPlan' ? 'active-tab' : ''}
-          onClick={() => setActiveTab('studyPlan')}
-        >
-          Study Plan
-        </button>
-      </div>
-
-      <div className="course-description">{renderTabContent()}</div>
     </div>
   )
 }

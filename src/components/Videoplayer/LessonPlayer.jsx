@@ -7,6 +7,7 @@ const LessonPlayer = () => {
   const navigate = useNavigate()
 
   const [selectedFile, setSelectedFile] = useState(state)
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
 
   const lessons = state?.allFiles || []
 
@@ -18,6 +19,15 @@ const LessonPlayer = () => {
         </div>
       </div>
     )
+  }
+
+  const toggleMobileSidebar = () => {
+    setIsMobileSidebarOpen(!isMobileSidebarOpen)
+  }
+
+  const handleMobileFileSelect = (file) => {
+    setSelectedFile(file)
+    setIsMobileSidebarOpen(false) // Close sidebar after selection
   }
 
   const renderFileViewer = () => {
@@ -42,14 +52,6 @@ const LessonPlayer = () => {
               <i className="fas fa-file-pdf text-danger me-2"></i>
               PDF Viewer
             </span>
-            {/* <div className="d-flex gap-2">
-              <button className="btn btn-sm btn-outline-secondary">
-                <i className="fas fa-download"></i>
-              </button>
-              <button className="btn btn-sm btn-outline-secondary">
-                <i className="fas fa-expand"></i>
-              </button>
-            </div> */}
           </div>
           <iframe
             src={url}
@@ -118,20 +120,10 @@ const LessonPlayer = () => {
                 <div className="d-flex align-items-center">
                   <button
                     className="btn btn-outline-secondary btn-sm d-lg-none me-2"
-                    data-bs-toggle="offcanvas"
-                    data-bs-target="#lessonsOffcanvas"
+                    onClick={toggleMobileSidebar}
                   >
-                    <i className="fas fa-list"></i>
+                    <i className={`fas ${isMobileSidebarOpen ? 'fa-times' : 'fa-list'}`}></i>
                   </button>
-                  {/* <div className="dropdown d-none d-md-block">
-                    <button className="btn btn-link text-dark p-0" type="button">
-                      <div className="d-flex align-items-center">
-                        <span className="me-2 d-none d-lg-inline">test12</span>
-                        <span className="text-muted small d-none d-lg-inline">STD 121145</span>
-                        <div className="bg-warning rounded-circle ms-2" style={{ width: '32px', height: '32px' }}></div>
-                      </div>
-                    </button>
-                  </div> */}
                 </div>
               </div>
             </div>
@@ -145,16 +137,18 @@ const LessonPlayer = () => {
           </div>
         </div>
 
-        {/* Right Sidebar - Desktop */}
-        <div className="col-lg-3 d-none d-lg-block bg-white border-start">
+        {/* Right Sidebar - Desktop (Fixed and Scrollable) */}
+        <div className="col-lg-3 d-none d-lg-block bg-white border-start position-fixed end-0" style={{ width: '22%', height: '100vh', zIndex: 1000 }}>
           <div className="h-100 d-flex flex-column">
-            <div className="p-3 border-bottom bg-light">
+            {/* Fixed Header */}
+            <div className="p-3 border-bottom bg-light flex-shrink-0">
               <h5 className="mb-0 fw-bold text-primary">
                 <i className="fas fa-play-circle me-2"></i>
                 All Lessons
               </h5>
             </div>
 
+            {/* Scrollable Content */}
             <div className="flex-grow-1 overflow-auto">
               {lessons.map((file, idx) => (
                 <div
@@ -168,19 +162,21 @@ const LessonPlayer = () => {
                   style={{ cursor: 'pointer' }}
                 >
                   <div className="d-flex align-items-center">
-                    <div className="me-3">
+                    <div className="me-3 flex-shrink-0">
                       {file.type === 'pdf' && <i className="fas fa-file-pdf text-danger fs-4"></i>}
                       {['mp4', 'mov', 'avi', 'mkv'].includes(file.type) && <i className="fas fa-play-circle text-success fs-4"></i>}
                       {(file.type === 'ppt' || file.type === 'pptx') && <i className="fas fa-file-powerpoint text-warning fs-4"></i>}
                       {file.url?.includes('google') && <i className="fab fa-google-drive text-primary fs-4"></i>}
                     </div>
-                    <div className="flex-grow-1">
+                    <div className="flex-grow-1 min-width-0">
                       <h6 className="mb-1 fw-medium text-truncate">{file.name}</h6>
                       <small className="text-muted text-uppercase fw-bold">{file.type}</small>
                     </div>
-                    {selectedFile.name === file.name && (
-                      <i className="fas fa-chevron-right text-primary"></i>
-                    )}
+                    <div className="flex-shrink-0">
+                      {selectedFile.name === file.name && (
+                        <i className="fas fa-chevron-right text-primary"></i>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -188,52 +184,69 @@ const LessonPlayer = () => {
           </div>
         </div>
 
-        {/* Mobile Offcanvas for Lessons */}
-        <div className="offcanvas offcanvas-end d-lg-none" tabIndex="-1" id="lessonsOffcanvas">
-          <div className="offcanvas-header bg-primary text-white">
-            <h5 className="offcanvas-title">
-              <i className="fas fa-play-circle me-2"></i>
-              All Lessons
-            </h5>
-            <button type="button" className="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
-          </div>
-          <div className="offcanvas-body p-0">
-            {lessons.map((file, idx) => (
-              <div
-                key={idx}
-                className={`p-3 border-bottom cursor-pointer ${
-                  selectedFile.name === file.name
-                    ? 'bg-primary bg-opacity-10'
-                    : ''
-                }`}
-                onClick={() => {
-                  setSelectedFile(file)
-                  // Close offcanvas after selection on mobile
-                  const offcanvasElement = document.getElementById('lessonsOffcanvas')
-                  const offcanvas = bootstrap?.Offcanvas?.getInstance(offcanvasElement)
-                  offcanvas?.hide()
-                }}
-                style={{ cursor: 'pointer' }}
-              >
-                <div className="d-flex align-items-center">
-                  <div className="me-3">
-                    {file.type === 'pdf' && <i className="fas fa-file-pdf text-danger fs-3"></i>}
-                    {['mp4', 'mov', 'avi', 'mkv'].includes(file.type) && <i className="fas fa-play-circle text-success fs-3"></i>}
-                    {(file.type === 'ppt' || file.type === 'pptx') && <i className="fas fa-file-powerpoint text-warning fs-3"></i>}
-                    {file.url?.includes('google') && <i className="fab fa-google-drive text-primary fs-3"></i>}
-                  </div>
-                  <div className="flex-grow-1">
-                    <h6 className="mb-1 fw-medium">{file.name}</h6>
-                    <small className="text-muted text-uppercase fw-bold">{file.type}</small>
-                  </div>
-                  {selectedFile.name === file.name && (
-                    <i className="fas fa-check-circle text-success fs-5"></i>
-                  )}
+        {/* Mobile Sidebar Overlay */}
+        {isMobileSidebarOpen && (
+          <div className="d-lg-none position-fixed top-0 start-0 w-100 h-100" style={{ zIndex: 9999 }}>
+            {/* Backdrop */}
+            <div
+              className="position-absolute top-0 start-0 w-100 h-100 bg-black bg-opacity-50"
+              onClick={() => setIsMobileSidebarOpen(false)}
+            ></div>
+
+            {/* Sidebar */}
+            <div className="position-absolute top-0 end-0 bg-white h-100 shadow-lg" style={{ width: '80%', maxWidth: '350px' }}>
+              <div className="h-100 d-flex flex-column">
+                {/* Header */}
+                <div className="p-3 bg-primary text-white d-flex justify-content-between align-items-center flex-shrink-0">
+                  <h5 className="mb-0">
+                    <i className="fas fa-play-circle me-2"></i>
+                    All Lessons
+                  </h5>
+                  <button
+                    className="btn btn-link text-white p-0"
+                    onClick={() => setIsMobileSidebarOpen(false)}
+                  >
+                    <i className="fas fa-times fs-4"></i>
+                  </button>
+                </div>
+
+                {/* Scrollable Content */}
+                <div className="flex-grow-1 overflow-auto">
+                  {lessons.map((file, idx) => (
+                    <div
+                      key={idx}
+                      className={`p-3 border-bottom cursor-pointer ${
+                        selectedFile.name === file.name
+                          ? 'bg-primary bg-opacity-10'
+                          : ''
+                      }`}
+                      onClick={() => handleMobileFileSelect(file)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <div className="d-flex align-items-center">
+                        <div className="me-3 flex-shrink-0">
+                          {file.type === 'pdf' && <i className="fas fa-file-pdf text-danger fs-3"></i>}
+                          {['mp4', 'mov', 'avi', 'mkv'].includes(file.type) && <i className="fas fa-play-circle text-success fs-3"></i>}
+                          {(file.type === 'ppt' || file.type === 'pptx') && <i className="fas fa-file-powerpoint text-warning fs-3"></i>}
+                          {file.url?.includes('google') && <i className="fab fa-google-drive text-primary fs-3"></i>}
+                        </div>
+                        <div className="flex-grow-1 min-width-0">
+                          <h6 className="mb-1 fw-medium">{file.name}</h6>
+                          <small className="text-muted text-uppercase fw-bold">{file.type}</small>
+                        </div>
+                        <div className="flex-shrink-0">
+                          {selectedFile.name === file.name && (
+                            <i className="fas fa-check-circle text-success fs-5"></i>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   )

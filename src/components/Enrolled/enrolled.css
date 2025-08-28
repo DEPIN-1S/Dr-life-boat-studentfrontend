@@ -1,75 +1,528 @@
-.enrolled-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  padding: 20px;
+/* Container for the entire enrolled section */
+.enrolled-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
 }
 
+/* Grid layout for enrolled courses */
+.enrolled-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 20px 0;
+}
+
+/* Individual course card */
 .enrolled-card {
   background-color: white;
   color: rgb(42, 40, 40);
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
-  font-family: Arial, sans-serif;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  /* max-width: 30%; */
+  font-family: 'Arial', sans-serif;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: fit-content;
+}
+
+.enrolled-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Image container with aspect ratio */
+.enrolled-image-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  overflow: hidden;
 }
 
 .enrolled-image {
   width: 100%;
-  height: 220px;
-  display: block;
-  object-fit: contain;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
 }
 
+.enrolled-card:hover .enrolled-image {
+  transform: scale(1.05);
+}
+
+/* Card content */
 .enrolled-info {
-  padding: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .enrolled-title {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: bold;
-  margin: 8px 0 4px;
+  margin: 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .enrolled-author {
   font-size: 14px;
-  color: #aaa;
-  margin-bottom: 6px;
+  color: #666;
+  margin: 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
+/* Rating section */
 .enrolled-rating {
   display: flex;
   align-items: center;
   font-size: 14px;
-  margin-bottom: 6px;
+  gap: 4px;
+  flex-wrap: wrap;
 }
 
-.rating,
+.rating {
+  color: #f39c12;
+  font-weight: bold;
+}
+
 .stars {
   color: #f39c12;
-  margin-right: 4px;
+  letter-spacing: 1px;
 }
 
 .review-count {
   color: #aaa;
 }
 
-.enrolled-price {
-  font-size: 16px;
-  font-weight: bold;
-}
+/* Course details button */
 .course-details-button {
-  width: 90%;
+  width: 100%;
   background-color: #1c7c63;
   color: white;
-  padding: 10px 15px;
+  padding: 12px 16px;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: bold;
+  font-size: 14px;
   text-align: center;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  margin-top: 8px;
+}
 
-  display: block;
-  margin: 0 auto;
+.course-details-button:hover {
+  background-color: #156b54;
+  transform: translateY(-1px);
+}
+
+.course-details-button:active {
+  transform: translateY(0);
+}
+
+/* Course Card Styles */
+.course-card {
+  max-width: 1200px;
+  margin: 20px auto;
+  border: 1px solid #ddd;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  background-color: #fff;
+  font-family: 'Arial', sans-serif;
+}
+
+.course-description-media {
+  position: relative;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+}
+
+.course-description-image {
+  width: 100%;
+  height: auto;
+  max-height: 500px;
+  border-radius: 12px;
+  object-fit: contain;
+  background: #f8f9fa;
+}
+
+/* Badge container */
+.badge-container {
+  margin: 20px 0 15px 0;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+  display: inline-block;
+}
+
+.badge.premium {
+  background-color: #b48a00;
+}
+
+.badge.recorded {
+  background-color: #007bff;
+}
+
+/* Course title */
+.course-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 15px 0;
+  line-height: 1.3;
+  color: #2c3e50;
+}
+
+/* Tags */
+.tags {
+  margin: 15px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tags span {
+  background: #f8f9fa;
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 16px;
+  color: #495057;
+  border: 1px solid #e9ecef;
+}
+
+/* Rating section */
+.rating-section {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  margin: 15px 0;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rating-section .rating {
+  font-weight: bold;
+  color: #f39c12;
+}
+
+.rating-section .stars {
+  color: #ddd;
+  letter-spacing: 1px;
+}
+
+.details,
+.students {
+  color: #666;
+}
+
+/* Price section */
+.price-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #f6f9ff 0%, #e8f4f8 100%);
+  padding: 16px;
+  margin: 20px 0;
+  border-radius: 12px;
+  border: 1px solid #e3f2fd;
+}
+
+.price {
+  font-size: 24px;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.original-price {
+  text-decoration: line-through;
+  color: #999;
+  margin-left: 10px;
+  font-size: 18px;
+}
+
+.buy-btn {
+  background-color: #1c7c63;
+  color: #fff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  min-width: 100px;
+}
+
+.buy-btn:hover {
+  background-color: #156b54;
+  transform: translateY(-2px);
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  margin: 25px 0 0 0;
+  border-bottom: 2px solid #f1f3f4;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tabs button {
+  flex: 1;
+  min-width: 120px;
+  padding: 12px 16px;
+  border: none;
+  background: none;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+  color: #666;
+  white-space: nowrap;
+}
+
+.tabs .active-tab {
+  border-bottom: 3px solid #1c7c63;
+  color: #1c7c63;
+  background-color: rgba(28, 124, 99, 0.05);
+}
+
+.tabs button:hover:not(.active-tab) {
+  color: #1c7c63;
+  background-color: rgba(28, 124, 99, 0.02);
+}
+
+/* Course description */
+.course-description {
+  margin-top: 20px;
+  padding-top: 20px;
+  font-size: 14px;
+  color: #333;
+  border-top: 1px solid #eee;
+  line-height: 1.6;
+}
+
+/* Hide download buttons */
+.doc-viewer-container button[title*='Download'],
+.doc-viewer-container a[download] {
+  display: none !important;
+}
+
+/* Mobile Responsive Breakpoints */
+
+/* Large tablets and small desktops */
+@media (max-width: 1024px) {
+  .enrolled-container {
+    padding: 0 10px;
+  }
+
+  .enrolled-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+  }
+
+  .course-card {
+    margin: 15px;
+    padding: 16px;
+  }
+
+  .course-title {
+    font-size: 22px;
+  }
+}
+
+/* Tablets */
+@media (max-width: 768px) {
+  .enrolled-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 15px;
+    padding: 15px 0;
+  }
+
+  .course-card {
+    margin: 10px;
+    padding: 15px;
+  }
+
+  .course-title {
+    font-size: 20px;
+  }
+
+  .price-section {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+
+  .buy-btn {
+    width: 100%;
+    padding: 14px;
+  }
+
+  .tabs {
+    justify-content: flex-start;
+  }
+
+  .tabs button {
+    min-width: 100px;
+    font-size: 13px;
+  }
+
+  .course-description-image {
+    max-height: 400px;
+  }
+}
+
+/* Mobile phones */
+@media (max-width: 480px) {
+  .enrolled-container {
+    padding: 0 8px;
+  }
+
+  .enrolled-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 12px 0;
+  }
+
+  .enrolled-card {
+    margin: 0 auto;
+    max-width: 100%;
+  }
+
+  .enrolled-info {
+    padding: 12px;
+  }
+
+  .enrolled-title {
+    font-size: 16px;
+  }
+
+  .enrolled-author {
+    font-size: 13px;
+  }
+
+  .course-details-button {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  /* Course card mobile adjustments */
+  .course-card {
+    margin: 8px;
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .course-title {
+    font-size: 18px;
+    margin: 12px 0;
+  }
+
+  .badge-container {
+    margin: 15px 0 10px 0;
+  }
+
+  .badge {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .tags span {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .rating-section {
+    font-size: 13px;
+    flex-wrap: wrap;
+  }
+
+  .price {
+    font-size: 20px;
+  }
+
+  .original-price {
+    font-size: 16px;
+  }
+
+  .tabs button {
+    min-width: 80px;
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+
+  .course-description-image {
+    max-height: 300px;
+  }
+
+  .course-description {
+    font-size: 13px;
+    padding-top: 15px;
+  }
+}
+
+/* Extra small phones */
+@media (max-width: 360px) {
+  .enrolled-container {
+    padding: 0 5px;
+  }
+
+  .course-card {
+    margin: 5px;
+    padding: 10px;
+  }
+
+  .course-title {
+    font-size: 16px;
+  }
+
+  .price {
+    font-size: 18px;
+  }
+
+  .tabs button {
+    min-width: 70px;
+    padding: 8px 6px;
+    font-size: 11px;
+  }
+
+  .course-description-image {
+    max-height: 250px;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+  .course-description-image {
+    max-height: 200px;
+  }
+
+  .course-card {
+    padding: 10px;
+  }
+
+  .course-title {
+    font-size: 16px;
+    margin: 8px 0;
+  }
 }

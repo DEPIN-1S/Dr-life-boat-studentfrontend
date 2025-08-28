@@ -6,6 +6,7 @@
   padding: 16px;
   background-color: #fff;
   font-family: 'Arial', sans-serif;
+  max-width: 100%;
 }
 
 .course-image img {
@@ -21,8 +22,18 @@
   object-fit: contain;
 }
 
+.course-description-media {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
 .badge-container {
   margin-top: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
 }
 
 .badge {
@@ -46,15 +57,23 @@
   font-size: 20px;
   font-weight: bold;
   margin: 12px 0;
+  line-height: 1.3;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0;
 }
 
 .tags span {
   display: inline-block;
   background: #f2f2f2;
   padding: 4px 10px;
-  margin: 4px 6px 4px 0;
   font-size: 12px;
   border-radius: 4px;
+  white-space: nowrap;
 }
 
 .rating-section {
@@ -62,21 +81,20 @@
   align-items: center;
   font-size: 14px;
   margin-top: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .rating {
   font-weight: bold;
-  margin-right: 6px;
 }
 
 .stars {
   color: #ccc;
-  margin-right: 8px;
 }
 
 .details,
 .students {
-  margin-right: 10px;
   color: #666;
 }
 
@@ -88,18 +106,23 @@
   padding: 12px;
   margin-top: 16px;
   border-radius: 8px;
+  gap: 10px;
 }
 
 .price {
   font-size: 20px;
   font-weight: bold;
   color: #333;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .original-price {
   text-decoration: line-through;
   color: #999;
-  margin-left: 10px;
+  font-size: 16px;
 }
 
 .buy-btn {
@@ -110,16 +133,19 @@
   border-radius: 8px;
   cursor: pointer;
   font-weight: bold;
+  white-space: nowrap;
+  min-width: 100px;
 }
 
 .buy-btn:hover {
-  background-color: #1c7c63;
+  background-color: #155c4a;
 }
 
 .tabs {
   display: flex;
   justify-content: space-around;
   margin-top: 20px;
+  border-bottom: 1px solid #eee;
 }
 
 .tabs button {
@@ -131,6 +157,7 @@
   cursor: pointer;
   border-bottom: 2px solid transparent;
   transition: all 0.3s ease;
+  font-size: 14px;
 }
 
 .tabs .active-tab {
@@ -145,8 +172,225 @@
   color: #333;
   border-top: 1px solid #eee;
 }
-/* Apply globally or scope it within a class */
+
+/* Hide download buttons in document viewers */
 .doc-viewer-container button[title*='Download'],
 .doc-viewer-container a[download] {
   display: none !important;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .course-card {
+    margin: 10px;
+    padding: 12px;
+    border-radius: 8px;
+  }
+
+  .course-description-image {
+    height: 300px !important;
+  }
+
+  .course-description-media iframe {
+    height: 300px !important;
+  }
+
+  .badge-container {
+    margin-top: 20px;
+  }
+
+  .course-title {
+    font-size: 18px;
+    margin: 10px 0;
+  }
+
+  .tags span {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+
+  .rating-section {
+    font-size: 13px;
+    gap: 6px;
+  }
+
+  .price-section {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    text-align: center;
+  }
+
+  .price {
+    font-size: 18px;
+    justify-content: center;
+  }
+
+  .original-price {
+    font-size: 14px;
+  }
+
+  .buy-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+  }
+
+  .tabs {
+    flex-wrap: wrap;
+    border-bottom: none;
+  }
+
+  .tabs button {
+    flex: 1;
+    min-width: calc(33.333% - 5px);
+    font-size: 13px;
+    padding: 8px 4px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 2px;
+  }
+
+  .tabs .active-tab {
+    border-bottom: 2px solid #1c7c63;
+  }
+
+  .course-description {
+    font-size: 13px;
+    padding-top: 10px;
+    margin-top: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .course-card {
+    margin: 5px;
+    padding: 10px;
+  }
+
+  .course-description-image {
+    height: 250px !important;
+    border-radius: 6px;
+  }
+
+  .course-description-media iframe {
+    height: 250px !important;
+  }
+
+  .badge-container {
+    margin-top: 15px;
+  }
+
+  .badge {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+
+  .course-title {
+    font-size: 16px;
+    margin: 8px 0;
+  }
+
+  .tags {
+    gap: 4px;
+  }
+
+  .tags span {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+
+  .rating-section {
+    font-size: 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .price {
+    font-size: 16px;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .original-price {
+    font-size: 13px;
+  }
+
+  .tabs button {
+    font-size: 12px;
+    padding: 6px 2px;
+  }
+
+  .course-description {
+    font-size: 12px;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 320px) {
+  .course-card {
+    margin: 2px;
+    padding: 8px;
+  }
+
+  .course-description-image {
+    height: 200px !important;
+  }
+
+  .course-description-media iframe {
+    height: 200px !important;
+  }
+
+  .course-title {
+    font-size: 14px;
+  }
+
+  .price {
+    font-size: 14px;
+  }
+
+  .buy-btn {
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  .tabs button {
+    font-size: 11px;
+    padding: 5px 1px;
+  }
+}
+
+/* Landscape mobile orientation */
+@media (max-width: 768px) and (orientation: landscape) {
+  .course-description-image {
+    height: 350px !important;
+  }
+
+  .course-description-media iframe {
+    height: 350px !important;
+  }
+}
+
+/* Tablet specific styles */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .course-card {
+    margin: 15px auto;
+    max-width: 700px;
+  }
+
+  .course-description-image {
+    height: 400px !important;
+  }
+
+  .course-description-media iframe {
+    height: 400px !important;
+  }
+
+  .course-title {
+    font-size: 19px;
+  }
+
+  .price {
+    font-size: 19px;
+  }
 }

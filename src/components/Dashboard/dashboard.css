@@ -1,4 +1,4 @@
-.stat-card {
+/* .stat-card {
   border: 1px solid #ddd;
   border-radius: 8px;
   padding: 20px;
@@ -31,4 +31,260 @@
   font-size: 0.9rem;
   color: #555;
   margin: 0;
+} */
+
+
+/* dashboard.css */
+
+/* Container Styles */
+.dashboard-container {
+  padding: 1rem;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.dashboard-header {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.dashboard-title {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0;
+  font-size: 1.5rem;
+}
+
+/* Stats Row */
+.stats-row {
+  margin: 0;
+}
+
+.stat-col {
+  padding: 0.5rem;
+}
+
+/* Card Styles */
+.stat-card {
+  border: 1px solid #e0e6ed;
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  background: #fff;
+  min-height: 180px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.stat-card:hover {
+  box-shadow: 0 8px 25px rgba(9, 144, 137, 0.15);
+  transform: translateY(-2px);
+  border-color: #099089;
+}
+
+.stat-card:focus {
+  outline: 2px solid #099089;
+  outline-offset: 2px;
+}
+
+.stat-card:active {
+  transform: translateY(0);
+}
+
+/* Icon Wrapper */
+.icon-wrapper {
+  background: linear-gradient(135deg, #e6f4ee 0%, #d1e7dd 100%);
+  color: #099089;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(9, 144, 137, 0.1);
+}
+
+.stat-card:hover .icon-wrapper {
+  background: linear-gradient(135deg, #099089 0%, #066b66 100%);
+  color: white;
+  transform: scale(1.1);
+}
+
+/* Text Styles */
+.stat-count {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2c3e50;
+  line-height: 1.2;
+}
+
+.stat-label {
+  font-size: 0.95rem;
+  color: #091422;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+/* Responsive Breakpoints */
+
+/* Extra Small devices (phones, less than 576px) */
+@media (max-width: 575.98px) {
+  .dashboard-container {
+    padding: 0.75rem;
+  }
+
+  .dashboard-title {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+  }
+
+  .stat-card {
+    padding: 1.25rem 1rem;
+    min-height: 160px;
+  }
+
+  .icon-wrapper {
+    width: 60px;
+    height: 60px;
+  }
+
+  .icon-wrapper svg {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .stat-count {
+    font-size: 1.75rem;
+  }
+
+  .stat-label {
+    font-size: 0.9rem;
+  }
+
+  .stats-row {
+    gap: 0.75rem !important;
+  }
+}
+
+/* Small devices (landscape phones, 576px and up) */
+@media (min-width: 576px) and (max-width: 767.98px) {
+  .dashboard-container {
+    padding: 1rem;
+  }
+
+  .stat-card {
+    min-height: 170px;
+  }
+
+  .icon-wrapper {
+    width: 65px;
+    height: 65px;
+  }
+
+  .icon-wrapper svg {
+    width: 36px !important;
+    height: 36px !important;
+  }
+}
+
+/* Medium devices (tablets, 768px and up) */
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .dashboard-container {
+    padding: 1.25rem;
+  }
+
+  .dashboard-title {
+    text-align: left;
+  }
+
+  .stat-card {
+    min-height: 185px;
+    padding: 1.75rem 1.5rem;
+  }
+}
+
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+  .dashboard-container {
+    padding: 1.5rem 2rem;
+  }
+
+  .dashboard-header {
+    text-align: left;
+    margin-bottom: 2rem;
+  }
+
+  .dashboard-title {
+    font-size: 1.75rem;
+  }
+
+  .stat-card {
+    min-height: 200px;
+    padding: 2rem 1.5rem;
+  }
+
+  .stats-row {
+    gap: 1rem !important;
+  }
+}
+
+/* Extra large devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) {
+  .dashboard-container {
+    max-width: 1140px;
+    margin: 0 auto;
+  }
+
+  .stats-row {
+    gap: 1.5rem !important;
+  }
+}
+
+/* Accessibility Improvements */
+@media (prefers-reduced-motion: reduce) {
+  .stat-card,
+  .icon-wrapper {
+    transition: none;
+  }
+
+  .stat-card:hover {
+    transform: none;
+  }
+
+  .stat-card:hover .icon-wrapper {
+    transform: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .stat-card {
+    border-width: 2px;
+  }
+
+  .stat-card:hover {
+    border-width: 3px;
+  }
+}
+
+/* Dark mode support (if needed) */
+@media (prefers-color-scheme: dark) {
+  .stat-card {
+    background: #b0b3b8;
+    border-color: #40464f;
+    color: #e2e8f0;
+  }
+
+  .stat-count {
+    color: #f7fafc;
+  }
+
+  .stat-label {
+    color: #091422;
+  }
+
+  .dashboard-title {
+    color: #f7fafc;
+  }
 }
