@@ -1,43 +1,47 @@
-import React, { useState } from 'react'
-import './TestInstructions.css'
-import { useLocation, useNavigate } from 'react-router-dom'
+import React, { useState } from 'react';
+import './TestInstructions.css';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const TestInstructions = () => {
-  const navigation = useNavigate()
-  const data = useLocation()
-  const [checked, setChecked] = useState(false)
+  const navigation = useNavigate();
+  const locationData = useLocation();
+  const exam = locationData?.state?.exam || locationData.state;
+  const [checked, setChecked] = useState(false);
+
+  if (!exam?.ex_id) {
+    console.error('Exam data missing in TestInstructions');
+    return (
+      <div className="test-fullscreen">
+        <div className="test-content">
+          <h2>Error: Invalid Exam</h2>
+          <p>Please go back and select a valid exam.</p>
+          <button onClick={() => navigation('/exam')}>Back to Exams</button>
+        </div>
+      </div>
+    );
+  }
+
+  sessionStorage.setItem('currentExam', JSON.stringify(exam));
 
   return (
     <div className="test-fullscreen">
       <div className="test-content">
-        <h2 className="test-title">{data.state.ex_name}</h2>
-
+        <h2 className="test-title">{exam.ex_name}</h2>
         <div className="test-info">
           <p>
-            No of Questions: <strong>{data.state.ex_total_questions}</strong>
+            No of Questions: <strong>{exam.ex_total_questions}</strong>
           </p>
           <p>
-            Duration: <strong>{data.state.ex_duration} Minutes</strong>
+            Duration: <strong>{exam.ex_duration} Minutes</strong>
           </p>
         </div>
-
-        {/* <h3 className="instructions-title">Important Instructions</h3>
-        <ul className="instructions-list">
-          <li>4 marks for each correct answer and negative 1 for each incorrect answer.</li>
-          <li>You can skip questions if you do not want to attend.</li>
-          <li>In last question you can finish quiz after confirmation.</li>
-          <li>If time expires, the quiz will be automatically submitted without confirmation.</li>
-        </ul> */}
-
-        {/* ✅ NEW EXTENDED CONTENT STARTS HERE */}
         <div className="detailed-instructions">
           <h3>Please read the instructions carefully</h3>
-
           <h4>General Instructions:</h4>
           <ol>
             <li>
               Total duration of mock sample questions is{' '}
-              <strong>{data.state.ex_duration} minutes</strong>.
+              <strong>{exam.ex_duration} minutes</strong>.
             </li>
             <li>
               The clock will be set at the server and the countdown timer at the top-center of the
@@ -54,7 +58,6 @@ const TestInstructions = () => {
               final evaluation.
             </li>
           </ol>
-
           <h4>Navigating to a Question:</h4>
           <ol start={5}>
             <li>
@@ -83,7 +86,6 @@ const TestInstructions = () => {
               to Question Paper.
             </li>
           </ol>
-
           <h4>Answering a Question:</h4>
           <ol start={8}>
             <li>
@@ -108,7 +110,6 @@ const TestInstructions = () => {
             </li>
             <li>Only saved answers will be considered for evaluation.</li>
           </ol>
-
           <h4>Section-wise Categorisation:</h4>
           <ol start={11}>
             <li>If multiple sections exist, they will appear as headers at the top.</li>
@@ -124,7 +125,6 @@ const TestInstructions = () => {
               <li>If there are no sections, only the questions list will appear.</li>
             </ul>
           </ol>
-
           <h4>Instructions for Mock Test:</h4>
           <ol>
             <li>
@@ -135,7 +135,6 @@ const TestInstructions = () => {
               The mock test is only for familiarizing yourself with the system, not actual content.
             </li>
           </ol>
-
           <h4>Important Exam Rules:</h4>
           <ul>
             <li>
@@ -154,23 +153,21 @@ const TestInstructions = () => {
               Please read the official information bulletin carefully before appearing for the test.
             </li>
           </ul>
-
           <p className="acknowledgment">
-            <input type="checkbox" onClick={() => setChecked(true)} /> I acknowledge that I have
+            <input type="checkbox" onClick={() => setChecked(!checked)} /> I acknowledge that I have
             read and understood the above instructions and agree to comply with the guidelines.
           </p>
         </div>
-        {/* ✅ NEW EXTENDED CONTENT ENDS HERE */}
-
         <button
           className="start-btn"
           disabled={!checked}
-          onClick={() => navigation('/exam-view', { state: data.state })}
+          onClick={() => navigation('/exam-view', { state: exam })}
         >
           Start Now
         </button>
       </div>
     </div>
-  )
-}
-export default TestInstructions
+  );
+};
+
+export default TestInstructions;
