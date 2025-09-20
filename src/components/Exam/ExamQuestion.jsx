@@ -1,5 +1,6 @@
 
 
+
 // import React, { useEffect, useState } from 'react';
 // import './ExamQuestion.css';
 // import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
@@ -23,13 +24,12 @@
 //   const [questions, setQuestions] = useState([]);
 //   const [currentQuestion, setCurrentQuestion] = useState(null);
 //   const [questionStartTime, setQuestionStartTime] = useState(Date.now());
-//   const [timeUp, setTimeUp] = useState(false); // New state for time up
+//   const [timeUp, setTimeUp] = useState(false);
 
 //   useEffect(() => {
 //     console.log('Location state in ExamQuestion:', location.state);
 //     console.log('Effective stateExam:', stateExam);
 
-//     // Check if examId is valid
 //     if (!examId) {
 //       console.log('Exam ID is missing');
 //       Swal.fire({
@@ -42,7 +42,6 @@
 //       return;
 //     }
 
-//     // Load saved state from sessionStorage
 //     const savedResponses = sessionStorage.getItem('examResponses');
 //     const savedLocked = sessionStorage.getItem('lockedQuestions');
 //     const savedMarked = sessionStorage.getItem('markedReview');
@@ -54,13 +53,11 @@
 
 //     sessionStorage.setItem('currentExamId', examId.toString());
 
-//     // Set exam end time if not already set
 //     if (!savedEndTime) {
 //       const newEndTime = Date.now() + examMinutes * 60 * 1000;
 //       sessionStorage.setItem('examEndTime', newEndTime.toString());
 //     }
 
-//     // Fetch questions and start timer
 //     fetchQuestionsList(examId);
 
 //     const timer = setInterval(() => {
@@ -70,9 +67,8 @@
 //       const diff = Math.floor((parseInt(examEndTime) - Date.now()) / 1000);
 //       if (diff <= 0) {
 //         setTimeLeft(0);
-//         setTimeUp(true); // Set time up flag
+//         setTimeUp(true);
 //         clearInterval(timer);
-//         // No auto-submit; just show warning
 //         Swal.fire({
 //           icon: 'warning',
 //           title: 'Time Up!',
@@ -287,11 +283,10 @@
 //           sessionStorage.setItem(`examResults_${seId}`, JSON.stringify(response.data.data || []));
 //           return { success: true, seId };
 //         } else {
-//           console.error('Submission ID not found in response');
-//           return { success: false };
+//           console.warn('Submission ID not found in response. Using examId as fallback:', examId);
+//           return { success: true, seId: examId }; // Fallback to examId
 //         }
 //       }
-
 //       return { success: false };
 //     } catch (err) {
 //       console.error('Error submitting exam:', err);
@@ -573,6 +568,7 @@
 
 // export default ExamQuestion;
 
+
 import React, { useEffect, useState } from 'react';
 import './ExamQuestion.css';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
@@ -739,9 +735,16 @@ const ExamQuestion = () => {
         method: 'POST',
       });
       if (response.data.result) {
-        const data = response.data.data;
-        if (typeof data.q_question === 'string' && data.q_question.startsWith('[')) {
-          data.q_question = JSON.parse(data.q_question)[0] || '';
+        let data = response.data.data;
+        // Handle q_question as array - keep for line-by-line rendering
+        if (Array.isArray(data.q_question)) {
+          // Already array, keep as-is
+        } else if (typeof data.q_question === 'string') {
+          data.q_question = data.q_question.split(/\r?\n/).filter(line => line.trim());
+        }
+        // Handle question_images - split by comma if multiple
+        if (data.question_images) {
+          data.questionImages = data.question_images.split(',').map(img => img.trim()).filter(Boolean);
         }
         setCurrentQuestion(data);
       } else {
@@ -986,7 +989,8 @@ const ExamQuestion = () => {
   const reviewCount = markedReview.size;
   const visitedSet = new Set([...lockedQuestions, ...markedReview]);
   const notVisitedCount = totalQuestions - visitedSet.size;
-  const parsedQuestionText = typeof currentQuestion?.q_question === 'string' ? currentQuestion.q_question : currentQuestion?.q_question || '';
+  const questionLines = Array.isArray(currentQuestion?.q_question) ? currentQuestion.q_question : (typeof currentQuestion?.q_question === 'string' ? currentQuestion.q_question.split(/\r?\n/).filter(line => line.trim()) : []);
+  const questionImages = currentQuestion?.questionImages || [];
 
   if (loading) {
     return (
@@ -1023,13 +1027,20 @@ const ExamQuestion = () => {
           <div className="question-area">
             <div className="question-content">
               <div className="question-number">Q.{currentIndex + 1}/{questions.length}</div>
-              <p className="question-text">{parsedQuestionText}</p>
-              {currentQuestion?.q_image ? (
+              <div className="question-text">
+                {questionLines.map((line, idx) => (
+                  <p key={idx} style={{ margin: '0 0 10px 0', lineHeight: '1.6' }}>{line}</p>
+                ))}
+              </div>
+              {questionImages.length > 0 && (
                 <div className="image-panel">
                   <div className="image-watermark-inside">www.drlifeboat.com</div>
-                  <img src={baseurl + currentQuestion.q_image} alt="Exam Question" />
+                  {questionImages.map((imgPath, idx) => (
+                    <img key={idx} src={`${baseurl}${imgPath}`} alt={`Exam Question ${idx + 1}`} style={{ maxWidth: '100%', height: 'auto', marginBottom: '10px' }} />
+                  ))}
                 </div>
-              ) : (
+              )}
+              {!questionImages.length > 0 && (
                 <div className="image-panel">
                   <div className="image-watermark">www.drlifeboat.com</div>
                 </div>

@@ -48,19 +48,19 @@ const _nav = [
         to: '/exam-view', // Match ExamQuestion route
         icon: <FontAwesomeIcon icon={faBook} className="me-3" />,
       },
-      // {
-      //   component: CNavItem,
-      //   name: 'Result',
-      //   to: '/exam/result', // Base path, dynamic :examId handled by route
-      //   icon: <FaChartBar className="me-3" />,
-      // },
-
-    {
+      {
         component: CNavItem,
-        name: 'Analytics',
-        to: '/exam/result',// Base path, dynamic :examId handled by route
+        name: 'Result',
+        to: '/exam/result', // Base path, dynamic :examId handled by route
         icon: <FaChartBar className="me-3" />,
       },
+
+    // {
+    //     component: CNavItem,
+    //     name: 'Analytics',
+    //     to: '/exam/result',// Base path, dynamic :examId handled by route
+    //     icon: <FaChartBar className="me-3" />,
+    //   },
 
 
     ],
