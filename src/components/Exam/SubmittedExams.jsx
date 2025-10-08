@@ -33,7 +33,7 @@ const SubmittedExams = () => {
 
   const handleExamClick = (exam) => {
     // Navigate to analysis with se_id (submission ID)
-    navigate(`/exam/${exam.se_id}/analysis`, { state: { submittedExamId: exam.se_id } });
+    navigate(`/exam/${exam.ex_id}/analysis`, { state: { submittedExamId: exam.ex_id } });
   };
 
   if (loading) {

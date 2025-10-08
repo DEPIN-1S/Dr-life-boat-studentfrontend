@@ -48,12 +48,12 @@ const _nav = [
         to: '/exam-view', // Match ExamQuestion route
         icon: <FontAwesomeIcon icon={faBook} className="me-3" />,
       },
-      {
-        component: CNavItem,
-        name: 'Result',
-        to: '/exam/result', // Base path, dynamic :examId handled by route
-        icon: <FaChartBar className="me-3" />,
-      },
+// {
+//         component: CNavItem,
+//         name: 'Results',
+//         to: '/exam/result/:seExamId', // List of results (base path for overview; dynamic :seId handled separately for details)
+//         icon: <FaChartBar className="me-3" />,
+//       },
 
     // {
     //     component: CNavItem,
