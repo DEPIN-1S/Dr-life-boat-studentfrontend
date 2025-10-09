@@ -434,14 +434,14 @@ const Results = () => {
               <h2 style={{ margin: 0, color: '#212529', fontSize: '24px', textAlign: 'center' }}> {examInfo?.ex_name || 'Exam Results'}</h2>
               <p style={{ margin: '10px 0 0', textAlign: 'center', color: '#6c757d', fontSize: '14px' }}>{currentDateTime} </p>
             </div>
-{/*
+            {/*
             <div style={{ backgroundColor: '#f8f9fa', padding: '20px', borderRadius: '12px', marginBottom: '20px', border: '1px solid #dee2e6' }}>
               <h3 style={{ margin: 0, color: '#212529', fontSize: '20px' }}>{examInfo?.ex_name || 'Exam Results'}</h3>
               <p style={{ margin: '10px 0 0', color: '#6c757d', fontSize: '14px' }}>Score: {examInfo?.se_score || totalScore}/{examInfo?.ex_total_questions || examDetails.length}</p>
               <p style={{ margin: '5px 0 0', color: '#6c757d', fontSize: '14px' }}>Duration: {examInfo?.se_duration || timeTakenStr}</p>
               <p style={{ margin: '5px 0 0', color: '#6c757d', fontSize: '14px' }}>Submitted: {examInfo?.se_created_at ? new Date(examInfo.se_created_at).toLocaleString() : currentDateTime}</p>
             </div> */}
-{/*
+            {/*
             <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', marginBottom: '20px', border: '1px solid #dee2e6', textAlign: 'center' }}>
               <h3 style={{ margin: '0 0 10px', color: '#495057' }}>Your Ranking</h3>
               <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#007bff', marginBottom: '10px' }}>#{totalRank}/{totalParticipants}</div>
@@ -644,14 +644,16 @@ const Results = () => {
                       <div className="explanation-content" style={{ fontSize: '14px', lineHeight: '1.6', color: '#4a5568', marginTop: '5px' }} dangerouslySetInnerHTML={{ __html: parsedOptionExplanation }} />
                     </>
                   )}
+<div  >
                   {explanationImages.length > 0 && (
                     <div style={{ marginTop: '10px' }}>
                       <h5 style={{ color: '#4c63d2', marginBottom: '8px' }}>Explanation Images:</h5>
                       {explanationImages.map((imgPath, idx) => (
-                        <img key={idx} src={`${baseurl}${imgPath}`} alt={`Explanation Image ${idx + 1}`} style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', marginBottom: '8px' }} />
+                        <img key={idx} src={`${baseurl}${imgPath}`} alt={`Explanation Image ${idx + 1}`} style={{  maxWidth: '100%', height: 'auto', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', marginBottom: '8px' }} />
                       ))}
                     </div>
                   )}
+</div>
                   {ruleoutImages.length > 0 && (
                     <div style={{ marginTop: '10px', padding: '15px', backgroundColor: '#fff3cd', borderRadius: '8px', borderLeft: '4px solid #ffc107' }}>
                       <h5 style={{ color: '#856404', marginBottom: '8px' }}>Rule Out Images:</h5>
