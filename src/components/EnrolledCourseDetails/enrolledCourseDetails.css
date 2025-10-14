@@ -3,61 +3,81 @@
   border: 1px solid #ddd;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-  padding: 16px;
   background-color: #fff;
   font-family: 'Arial', sans-serif;
   max-width: 100%;
+  overflow: hidden;
 }
 
-.course-image img {
+.course-banner {
+  position: relative;
   width: 100%;
-  height: auto;
-  border-radius: 8px;
 }
 
 .course-description-image {
   width: 100%;
   height: 500px !important;
-  border-radius: 8px;
-  object-fit: contain;
+  border-radius: 8px 8px 0 0;
+  object-fit: cover;
+  display: block;
 }
 
 .course-description-media {
   position: relative;
   width: 100%;
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: 8px 8px 0 0;
+}
+
+.banner-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
+  padding: 40px 20px 20px;
+  color: white;
+}
+
+.course-title-overlay {
+  font-size: 28px;
+  font-weight: bold;
+  margin: 0 0 10px 0;
+  line-height: 1.2;
+  text-align: center;
+  color: black;
 }
 
 .badge-container {
-  margin-top: 30px;
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
 }
 
 .badge {
-  padding: 5px 10px;
-  border-radius: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
   font-size: 12px;
   font-weight: bold;
   color: white;
-  margin-right: 5px;
 }
 
 .badge.premium {
-  background-color: #b48a00;
+  background-color: #e91e63;
 }
 
 .badge.recorded {
-  background-color: #007bff;
+  background-color: #2196f3;
 }
 
-.course-title {
-  font-size: 20px;
-  font-weight: bold;
-  margin: 12px 0;
-  line-height: 1.3;
+.badge.chapters {
+  background-color: #ff9800;
+}
+
+.course-details {
+  padding: 20px;
 }
 
 .tags {
@@ -113,20 +133,10 @@
   font-size: 20px;
   font-weight: bold;
   color: #333;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.original-price {
-  text-decoration: line-through;
-  color: #999;
-  font-size: 16px;
 }
 
 .buy-btn {
-  background-color: #1c7c63;
+  background-color: #ff9800;
   color: #fff;
   border: none;
   padding: 10px 16px;
@@ -138,7 +148,7 @@
 }
 
 .buy-btn:hover {
-  background-color: #155c4a;
+  background-color: #f57c00;
 }
 
 .tabs {
@@ -161,8 +171,8 @@
 }
 
 .tabs .active-tab {
-  border-bottom: 2px solid #1c7c63;
-  color: #1c7c63;
+  border-bottom: 2px solid #ff9800;
+  color: #ff9800;
 }
 
 .course-description {
@@ -183,7 +193,6 @@
 @media (max-width: 768px) {
   .course-card {
     margin: 10px;
-    padding: 12px;
     border-radius: 8px;
   }
 
@@ -195,23 +204,21 @@
     height: 300px !important;
   }
 
-  .badge-container {
-    margin-top: 20px;
+  .banner-overlay {
+    padding: 30px 15px 15px;
   }
 
-  .course-title {
-    font-size: 18px;
-    margin: 10px 0;
+  .course-title-overlay {
+    font-size: 22px;
   }
 
-  .tags span {
+  .badge {
     font-size: 11px;
-    padding: 3px 8px;
+    padding: 5px 10px;
   }
 
-  .rating-section {
-    font-size: 13px;
-    gap: 6px;
+  .course-details {
+    padding: 15px;
   }
 
   .price-section {
@@ -224,10 +231,6 @@
   .price {
     font-size: 18px;
     justify-content: center;
-  }
-
-  .original-price {
-    font-size: 14px;
   }
 
   .buy-btn {
@@ -251,7 +254,7 @@
   }
 
   .tabs .active-tab {
-    border-bottom: 2px solid #1c7c63;
+    border-bottom: 2px solid #ff9800;
   }
 
   .course-description {
@@ -264,34 +267,28 @@
 @media (max-width: 480px) {
   .course-card {
     margin: 5px;
-    padding: 10px;
   }
 
   .course-description-image {
     height: 250px !important;
-    border-radius: 6px;
+    border-radius: 6px 6px 0 0;
   }
 
   .course-description-media iframe {
     height: 250px !important;
   }
 
-  .badge-container {
-    margin-top: 15px;
+  .banner-overlay {
+    padding: 20px 10px 10px;
+  }
+
+  .course-title-overlay {
+    font-size: 18px;
   }
 
   .badge {
     font-size: 10px;
-    padding: 3px 6px;
-  }
-
-  .course-title {
-    font-size: 16px;
-    margin: 8px 0;
-  }
-
-  .tags {
-    gap: 4px;
+    padding: 4px 8px;
   }
 
   .tags span {
@@ -312,10 +309,6 @@
     gap: 5px;
   }
 
-  .original-price {
-    font-size: 13px;
-  }
-
   .tabs button {
     font-size: 12px;
     padding: 6px 2px;
@@ -330,7 +323,6 @@
 @media (max-width: 320px) {
   .course-card {
     margin: 2px;
-    padding: 8px;
   }
 
   .course-description-image {
@@ -341,8 +333,8 @@
     height: 200px !important;
   }
 
-  .course-title {
-    font-size: 14px;
+  .course-title-overlay {
+    font-size: 16px;
   }
 
   .price {
@@ -386,8 +378,8 @@
     height: 400px !important;
   }
 
-  .course-title {
-    font-size: 19px;
+  .course-title-overlay {
+    font-size: 26px;
   }
 
   .price {

@@ -4,7 +4,7 @@ import avatar8 from './../../assets/images/avatars/8.jpg'
 
 const AppHeaderDropdown = () => {
   const userName = sessionStorage.getItem('name')
-  const userId = 'STD 121145'
+  // const userId = 'STD 121145'
 
   return (
     <CDropdown variant="nav-item">
@@ -19,11 +19,11 @@ const AppHeaderDropdown = () => {
           <br />
           <span className="text-muted" style={{ fontSize: '0.8em' }}>
             {' '}
-            {userId}
+            {/* {userId} */}
           </span>
         </div>
 
-        <CAvatar src={avatar8} size="md" />
+        {/* <CAvatar src={avatar8} size="md" /> */}
       </CDropdownToggle>
     </CDropdown>
   )
