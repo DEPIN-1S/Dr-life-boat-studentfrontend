@@ -8,7 +8,7 @@ import ProtectedExamQuestion from './components/Exam/ProtectedExamQuestion'; // 
 import Results from './components/Exam/Results';
 import SubmittedExams from './components/Exam/SubmittedExams';
 import Exam from './components/Exam/Exam';
-import Analysis from './components/Exam/Analysis';
+// import Analysis from './components/Exam/Analysis';
 import Logout from './components/Login/Logout';
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'));
 const Otp = React.lazy(() => import('./components/otp/Otp'));
@@ -43,7 +43,7 @@ const AppContent = () => {
         <Route path="/instructions" element={<TestInstructions />} />
         <Route path="/exam-view" element={<ProtectedExamQuestion />} /> {/* Use protected route */}
         <Route path="/exam/result/:seExamId" element={<Results />} />
-        <Route path="/exam/analysis" element={<Analysis />} />
+        {/* <Route path="/exam/analysis" element={<Analysis />} /> */}
         <Route path="/submitted-exams" element={<SubmittedExams />} />
         <Route path="/logout" element={<Logout />} />
         <Route path="/404" element={<Page404 />} />

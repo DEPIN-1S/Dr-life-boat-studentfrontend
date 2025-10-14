@@ -1,8 +1,3 @@
-
-
-
-
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { FaCheck, FaTimes, FaLock, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
@@ -434,25 +429,41 @@ const Results = () => {
               <h2 style={{ margin: 0, color: '#212529', fontSize: '24px', textAlign: 'center' }}> {examInfo?.ex_name || 'Exam Results'}</h2>
               <p style={{ margin: '10px 0 0', textAlign: 'center', color: '#6c757d', fontSize: '14px' }}>{currentDateTime} </p>
             </div>
-            {/*
-            <div style={{ backgroundColor: '#f8f9fa', padding: '20px', borderRadius: '12px', marginBottom: '20px', border: '1px solid #dee2e6' }}>
-              <h3 style={{ margin: 0, color: '#212529', fontSize: '20px' }}>{examInfo?.ex_name || 'Exam Results'}</h3>
-              <p style={{ margin: '10px 0 0', color: '#6c757d', fontSize: '14px' }}>Score: {examInfo?.se_score || totalScore}/{examInfo?.ex_total_questions || examDetails.length}</p>
-              <p style={{ margin: '5px 0 0', color: '#6c757d', fontSize: '14px' }}>Duration: {examInfo?.se_duration || timeTakenStr}</p>
-              <p style={{ margin: '5px 0 0', color: '#6c757d', fontSize: '14px' }}>Submitted: {examInfo?.se_created_at ? new Date(examInfo.se_created_at).toLocaleString() : currentDateTime}</p>
-            </div> */}
-            {/*
-            <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', marginBottom: '20px', border: '1px solid #dee2e6', textAlign: 'center' }}>
-              <h3 style={{ margin: '0 0 10px', color: '#495057' }}>Your Ranking</h3>
-              <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#007bff', marginBottom: '10px' }}>#{totalRank}/{totalParticipants}</div>
-              <button style={{ background: 'none', border: '1px solid #007bff', color: '#007bff', padding: '5px 15px', borderRadius: '20px', fontSize: '12px', cursor: 'pointer' }}>MORE INFO </button>
-            </div> */}
+            <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', marginBottom: '20px', border: '1px solid #dee2e6' }}>
+              <h3 style={{ margin: '0 0 20px', color: '#495057' }}>Total Question Score</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '20px', marginBottom: '20px' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#007bff' }}>
+                    {examDetails.length}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#6c757d' }}>Total Questions</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#007bff' }}>
+                    {attemptedQuestions}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#6c757d' }}>Attempted</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#28a745' }}>
+                    {userCorrectCount}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#6c757d' }}>Correct</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: scoreColor }}>
+                    {userCorrectCount}/{examDetails.length} ({userScore}%)
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#6c757d' }}>Score</div>
+                </div>
+              </div>
+            </div>
             <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', marginBottom: '20px', border: '1px solid #dee2e6' }}>
               <h3 style={{ margin: '0 0 20px', color: '#495057' }}>Performance Overview</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '20px', marginBottom: '20px' }}>
                 <div style={{ textAlign: 'center' }}><div style={{ fontSize: '24px', fontWeight: 'bold', color: scoreColor }}>{userScore}%</div><div style={{ fontSize: '12px', color: '#6c757d' }}>Score</div></div>
                 <div style={{ textAlign: 'center' }}><div style={{ fontSize: '24px', fontWeight: 'bold', color: '#007bff' }}>{attemptedQuestions}/{examDetails.length}</div><div style={{ fontSize: '12px', color: '#6c757d' }}>Attempted Questions</div></div>
-                <div style={{ textAlign: 'center' }}><div style={{ fontSize: '24px', fontWeight: 'bold', color: '#28a745' }}>{percentile}%</div><div style={{ fontSize: '12px', color: '#6c757d' }}>Percentile</div></div>
+                {/* <div style={{ textAlign: 'center' }}><div style={{ fontSize: '24px', fontWeight: 'bold', color: '#28a745' }}>{percentile}%</div><div style={{ fontSize: '12px', color: '#6c757d' }}>Percentile</div></div> */}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '20px', marginBottom: '20px' }}>
                 <div style={{ textAlign: 'center' }}><div style={{ fontSize: '18px', fontWeight: 'bold', color: '#dc3545' }}>{accuracy}%</div><div style={{ fontSize: '12px', color: '#6c757d' }}>Accuracy</div></div>
@@ -518,28 +529,35 @@ const Results = () => {
           <div>
             <div style={{ marginBottom: '30px', position: 'relative' }}>
               <div style={{ display: 'flex', overflowX: 'auto', gap: '8px', padding: '10px 0', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                {examDetails.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => goToQuestion(index)}
-                    style={{
-                      width: '40px',
-                      height: '40px',
-                      border: currentQuestion === index ? '3px solid #007bff' : '2px solid #ddd',
-                      borderRadius: '50%',
-                      background: examDetails[index].ea_correct === 1 ? '#28a745' : (examDetails[index].ea_answer.length > 0 ? '#dc3545' : '#6c757d'),
-                      color: 'white',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      fontWeight: 'bold',
-                      flexShrink: 0,
-                      transition: 'all 0.3s ease',
-                      boxShadow: currentQuestion === index ? '0 0 0 2px rgba(0,123,255,0.25)' : 'none',
-                    }}
-                  >
-                    {index + 1}
-                  </button>
-                ))}
+                {examDetails.map((_, index) => {
+                  const isCurrent = currentQuestion === index;
+                  const isCorrect = examDetails[index].ea_correct === 1;
+                  const hasAnswer = examDetails[index].ea_answer.length > 0;
+                  const statusColor = isCorrect ? '#28a745' : (hasAnswer ? '#dc3545' : '#6c757d');
+
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => goToQuestion(index)}
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        border: isCurrent ? '3px solid #007bff' : `2px solid ${statusColor}`,
+                        borderRadius: '50%',
+                        background: 'white', // or 'transparent' if preferred
+                        color: statusColor, // Use status color for text to maintain visibility
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                        flexShrink: 0,
+                        transition: 'all 0.3s ease',
+                        boxShadow: isCurrent ? '0 0 0 2px rgba(0,123,255,0.25)' : 'none',
+                      }}
+                    >
+                      {index + 1}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -644,16 +662,16 @@ const Results = () => {
                       <div className="explanation-content" style={{ fontSize: '14px', lineHeight: '1.6', color: '#4a5568', marginTop: '5px' }} dangerouslySetInnerHTML={{ __html: parsedOptionExplanation }} />
                     </>
                   )}
-<div  >
-                  {explanationImages.length > 0 && (
-                    <div style={{ marginTop: '10px' }}>
-                      <h5 style={{ color: '#4c63d2', marginBottom: '8px' }}>Explanation Images:</h5>
-                      {explanationImages.map((imgPath, idx) => (
-                        <img key={idx} src={`${baseurl}${imgPath}`} alt={`Explanation Image ${idx + 1}`} style={{  maxWidth: '100%', height: 'auto', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', marginBottom: '8px' }} />
-                      ))}
-                    </div>
-                  )}
-</div>
+                  <div  >
+                    {explanationImages.length > 0 && (
+                      <div style={{ marginTop: '10px' }}>
+                        <h5 style={{ color: '#4c63d2', marginBottom: '8px' }}>Explanation Images:</h5>
+                        {explanationImages.map((imgPath, idx) => (
+                          <img key={idx} src={`${baseurl}${imgPath}`} alt={`Explanation Image ${idx + 1}`} style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', marginBottom: '8px' }} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   {ruleoutImages.length > 0 && (
                     <div style={{ marginTop: '10px', padding: '15px', backgroundColor: '#fff3cd', borderRadius: '8px', borderLeft: '4px solid #ffc107' }}>
                       <h5 style={{ color: '#856404', marginBottom: '8px' }}>Rule Out Images:</h5>

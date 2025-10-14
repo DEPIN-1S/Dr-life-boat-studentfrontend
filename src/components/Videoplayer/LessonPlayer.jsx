@@ -30,6 +30,31 @@ const LessonPlayer = () => {
     setIsMobileSidebarOpen(false) // Close sidebar after selection
   }
 
+  // Helper function to render the appropriate icon
+  const renderFileIcon = (file, sizeClass = 'fs-4') => {
+    const { type, url } = file
+
+    if (type === 'pdf') {
+      return <i className={`fas fa-file-pdf text-danger ${sizeClass}`}></i>
+    }
+
+    if (['mp4', 'mov', 'avi', 'mkv'].includes(type)) {
+      return <i className={`fas fa-play-circle text-success ${sizeClass}`}></i>
+    }
+
+    if (type === 'ppt' || type === 'pptx') {
+      return <i className={`fas fa-file-powerpoint text-warning ${sizeClass}`}></i>
+    }
+
+    // Fallback for Google Drive or other types
+    if (url?.includes('google')) {
+      return <i className={`fab fa-google-drive text-primary ${sizeClass}`}></i>
+    }
+
+    // Default fallback icon if none match
+    return <i className={`fas fa-file text-secondary ${sizeClass}`}></i>
+  }
+
   const renderFileViewer = () => {
     const { url, type } = selectedFile
 
@@ -163,10 +188,7 @@ const LessonPlayer = () => {
                 >
                   <div className="d-flex align-items-center">
                     <div className="me-3 flex-shrink-0">
-                      {file.type === 'pdf' && <i className="fas fa-file-pdf text-danger fs-4"></i>}
-                      {['mp4', 'mov', 'avi', 'mkv'].includes(file.type) && <i className="fas fa-play-circle text-success fs-4"></i>}
-                      {(file.type === 'ppt' || file.type === 'pptx') && <i className="fas fa-file-powerpoint text-warning fs-4"></i>}
-                      {file.url?.includes('google') && <i className="fab fa-google-drive text-primary fs-4"></i>}
+                      {renderFileIcon(file)}
                     </div>
                     <div className="flex-grow-1 min-width-0">
                       <h6 className="mb-1 fw-medium text-truncate">{file.name}</h6>
@@ -225,10 +247,7 @@ const LessonPlayer = () => {
                     >
                       <div className="d-flex align-items-center">
                         <div className="me-3 flex-shrink-0">
-                          {file.type === 'pdf' && <i className="fas fa-file-pdf text-danger fs-3"></i>}
-                          {['mp4', 'mov', 'avi', 'mkv'].includes(file.type) && <i className="fas fa-play-circle text-success fs-3"></i>}
-                          {(file.type === 'ppt' || file.type === 'pptx') && <i className="fas fa-file-powerpoint text-warning fs-3"></i>}
-                          {file.url?.includes('google') && <i className="fab fa-google-drive text-primary fs-3"></i>}
+                          {renderFileIcon(file, 'fs-3')}
                         </div>
                         <div className="flex-grow-1 min-width-0">
                           <h6 className="mb-1 fw-medium">{file.name}</h6>
