@@ -6,6 +6,7 @@ import './scss/style.scss';
 import TestInstructions from './components/Exam/TestInstructions';
 import ProtectedExamQuestion from './components/Exam/ProtectedExamQuestion'; // Import protected route
 import Results from './components/Exam/Results';
+// const Analysis = React.lazy(() => import('./components/Exam/Analysis'));
 import SubmittedExams from './components/Exam/SubmittedExams';
 import Exam from './components/Exam/Exam';
 // import Analysis from './components/Exam/Analysis';

@@ -22,8 +22,8 @@ const AppHeaderDropdown = () => {
             {/* {userId} */}
           </span>
         </div>
-{/* 
-        <CAvatar src={avatar8} size="md" /> */}
+
+        {/* <CAvatar src={avatar8} size="md" /> */}
       </CDropdownToggle>
     </CDropdown>
   )
