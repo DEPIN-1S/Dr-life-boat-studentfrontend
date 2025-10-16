@@ -350,13 +350,15 @@ const Results = () => {
       </div>
     );
   }
-
+  console.log("examDetails : ", examDetails)
   const userCorrectCount = examDetails.filter((q) => q.ea_correct === 1).length || 0;
   const attemptedQuestions = examDetails.filter((q) => q.ea_answer.length > 0).length || 0;
   const incorrectAnswers = attemptedQuestions - userCorrectCount;
   const unanswered = examDetails.length - attemptedQuestions;
-  const totalScore = examDetails.reduce((sum, q) => sum + parseFloat(q.ea_mark || 0), 0);
-  const userScore = examDetails.length > 0 ? ((userCorrectCount / examDetails.length) * 100).toFixed(2) : 0;
+  const totalScore = examDetails.reduce((sum, q) => sum + parseFloat(q.q_mark || 0), 0);
+  const userScore = examDetails.reduce((sum, q) => sum + parseFloat(q.ea_mark || 0), 0);
+  const percentScore = totalScore > 0 ? ((userScore / totalScore) * 100).toFixed(2) : 0;
+  // const userScore = examDetails.length > 0 ? ((userCorrectCount / examDetails.length) * 100).toFixed(2) : 0;
   const accuracy = attemptedQuestions > 0 ? ((userCorrectCount / attemptedQuestions) * 100).toFixed(2) : 0;
 
   const correctTime = examDetails.reduce((sum, q) => q.ea_correct === 1 ? sum + parseTime(q.ea_time_taken) : sum, 0);
@@ -452,7 +454,7 @@ const Results = () => {
                 </div>
                 <div style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: '24px', fontWeight: 'bold', color: scoreColor }}>
-                    {userCorrectCount}/{examDetails.length} ({userScore}%)
+                    {userScore}/{totalScore} ({percentScore}%)
                   </div>
                   <div style={{ fontSize: '12px', color: '#6c757d' }}>Score</div>
                 </div>
