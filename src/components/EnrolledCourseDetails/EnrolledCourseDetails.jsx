@@ -362,9 +362,6 @@ const CourseCard = () => {
             ₹{courseDetails?.fee }
           </span>
           {/* <button className="buy-btn">Enrolled</button> */}
-        </div>
-
-        <div className="tabs">
           <button
             className={activeTab === 'overview' ? 'active-tab' : ''}
             onClick={() => setActiveTab('overview')}

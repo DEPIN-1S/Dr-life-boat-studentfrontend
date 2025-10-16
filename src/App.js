@@ -9,7 +9,7 @@ import Results from './components/Exam/Results';
 // const Analysis = React.lazy(() => import('./components/Exam/Analysis'));
 import SubmittedExams from './components/Exam/SubmittedExams';
 import Exam from './components/Exam/Exam';
-import Analysis from './components/Exam/Analysis';
+// import Analysis from './components/Exam/Analysis';
 import Logout from './components/Login/Logout';
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'));
 const Otp = React.lazy(() => import('./components/otp/Otp'));

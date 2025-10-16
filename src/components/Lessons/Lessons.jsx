@@ -73,50 +73,28 @@ const Lesson = ({ data, onFileSelect }) => {
       prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
     )
   }
+
+  const getFileExtension = (fileUrl) => {
+    if (!fileUrl) return ''
+    return fileUrl.split('.').pop().toLowerCase()
+  }
+
   const renderFiles = (files) => {
     if (!files || files.length === 0) return null
 
     return files.map((file, i) => {
       const fileUrl = file?.file || file.file_link
       const fileName = file.name || fileUrl || 'No File'
-      const extension = fileUrl
+      const fileExtension = getFileExtension(fileUrl)
+      const fileType = file.type || fileExtension
 
-      const isVideo = ['mp4', 'mov', 'avi', 'mkv'].includes(extension)
-      const isPdf = extension === 'pdf'
       const isClickable = file.isPurchased
 
-      // const handleClick = () => {
-      // if (isClickable) {
-      //   navigate('/lesson-player', {
-      //     state: {
-      //       url: file.file_link
-      //         ? fileUrl.replace(/\/view(\?.*)?$/, '/preview')
-      //         : `import.meta.env.VITE_BASE_URL${fileUrl}`,
-      //       name: fileName,
-      //       type: extension,
-      //       duration: file.duration || null,
-      //       allFiles: [...collectAllFilesFromModules],
-      //     },
-      //   })
-      // }
-      //uncomment if you want the video to be played in same page
-      // if (isClickable && onFileSelect) {
-      //   onFileSelect({
-      //     url: file.file_link
-      //       ? fileUrl.replace(/\/view(\?.*)?$/, '/preview')
-      //       : `import.meta.env.VITE_BASE_URL${fileUrl}`,
-      //     name: fileName,
-      //     type: extension,
-      //     duration: file.duration || null,
-      //   })
-      //   window.scrollTo({ top: 0, behavior: 'smooth' })
-      // }
-      // }
       const handleClick = () => {
         if (isClickable) {
           const allFiles = collectAllFilesFromModules(data.modules).map((f) => ({
             name: f.name || 'No Name',
-            type: f.type,
+            type: f.type || getFileExtension(f.file_link || f.file),
             url: f.file_link
               ? f.file_link.replace(/\/view(\?.*)?$/, '/preview')
               : `import.meta.env.VITE_BASE_URL${f.file}`,
@@ -129,7 +107,7 @@ const Lesson = ({ data, onFileSelect }) => {
               ? fileUrl.replace(/\/view(\?.*)?$/, '/preview')
               : `import.meta.env.VITE_BASE_URL${fileUrl}`,
             name: fileName,
-            type: extension,
+            type: fileType,
             duration: file.duration || null,
             allFiles, // pass flat list
           }
@@ -140,7 +118,24 @@ const Lesson = ({ data, onFileSelect }) => {
         }
       }
 
-      console.log(isClickable, 'isClickable')
+      const getIcon = () => {
+        if (!isClickable) return <FaLock />
+        switch (fileType) {
+          case 'video':
+          case 'mp4':
+          case 'mov':
+          case 'avi':
+          case 'mkv':
+            return <FaPlay />
+          case 'pdf':
+            return <FaFilePdf />
+          case 'ppt':
+          case 'pptx':
+            return <FaFilePowerpoint />
+          default:
+            return <FaFilePdf />
+        }
+      }
 
       return (
         <div
@@ -150,41 +145,13 @@ const Lesson = ({ data, onFileSelect }) => {
           style={{ cursor: isClickable ? 'pointer' : 'not-allowed', opacity: fileUrl ? 1 : 0.5 }}
         >
           <div>
-            <p>
-              {/* {fileName?.includes('drive.google.com')
-              ? 'GOOGLE DRIVE'
-              : fileName?.includes('docs.google.com')
-                ? 'PRESENTATION'
-                : 'FILE'} */}
-              {file.name}
-            </p>
+            <p>{file.name}</p>
             <div style={{ display: 'flex', gap: '20px' }}>
-              <p>{file.type}</p>
-              <p>
-                {/* {extension.includes(extension)
-              ? `Duration | ${file.duration || 'N/A'}`
-              : extension.includes('presentation')
-                ? 'GOOGLE DRIVE (PRESENTATION)'
-                : extension.includes('file')
-                  ? 'FILE'
-                  : 'UNKNOWN'} */}
-                {file.duration}
-              </p>
+              <p>{fileType.toUpperCase()}</p>
+              <p>{file.duration || 'N/A'}</p>
             </div>
           </div>
-          {isClickable ? (
-            file.type == 'video' ? (
-              <FaPlay />
-            ) : file.type == 'pdf' ? (
-              <FaFilePdf />
-            ) : file.type == 'ppt' ? (
-              <FaFilePowerpoint />
-            ) : (
-              <FaFilePdf />
-            )
-          ) : (
-            <FaLock />
-          )}
+          {getIcon()}
         </div>
       )
     })

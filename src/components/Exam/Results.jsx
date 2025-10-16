@@ -463,7 +463,7 @@ const Results = () => {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '20px', marginBottom: '20px' }}>
                 <div style={{ textAlign: 'center' }}><div style={{ fontSize: '24px', fontWeight: 'bold', color: scoreColor }}>{userScore}%</div><div style={{ fontSize: '12px', color: '#6c757d' }}>Score</div></div>
                 <div style={{ textAlign: 'center' }}><div style={{ fontSize: '24px', fontWeight: 'bold', color: '#007bff' }}>{attemptedQuestions}/{examDetails.length}</div><div style={{ fontSize: '12px', color: '#6c757d' }}>Attempted Questions</div></div>
-                <div style={{ textAlign: 'center' }}><div style={{ fontSize: '24px', fontWeight: 'bold', color: '#28a745' }}>{percentile}%</div><div style={{ fontSize: '12px', color: '#6c757d' }}>Percentile</div></div>
+                {/* <div style={{ textAlign: 'center' }}><div style={{ fontSize: '24px', fontWeight: 'bold', color: '#28a745' }}>{percentile}%</div><div style={{ fontSize: '12px', color: '#6c757d' }}>Percentile</div></div> */}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '20px', marginBottom: '20px' }}>
                 <div style={{ textAlign: 'center' }}><div style={{ fontSize: '18px', fontWeight: 'bold', color: '#dc3545' }}>{accuracy}%</div><div style={{ fontSize: '12px', color: '#6c757d' }}>Accuracy</div></div>
@@ -529,28 +529,35 @@ const Results = () => {
           <div>
             <div style={{ marginBottom: '30px', position: 'relative' }}>
               <div style={{ display: 'flex', overflowX: 'auto', gap: '8px', padding: '10px 0', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                {examDetails.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => goToQuestion(index)}
-                    style={{
-                      width: '40px',
-                      height: '40px',
-                      border: currentQuestion === index ? '3px solid #007bff' : '2px solid #ddd',
-                      borderRadius: '50%',
-                      background: examDetails[index].ea_correct === 1 ? '#28a745' : (examDetails[index].ea_answer.length > 0 ? '#dc3545' : '#6c757d'),
-                      color: 'white',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      fontWeight: 'bold',
-                      flexShrink: 0,
-                      transition: 'all 0.3s ease',
-                      boxShadow: currentQuestion === index ? '0 0 0 2px rgba(0,123,255,0.25)' : 'none',
-                    }}
-                  >
-                    {index + 1}
-                  </button>
-                ))}
+                {examDetails.map((_, index) => {
+                  const isCurrent = currentQuestion === index;
+                  const isCorrect = examDetails[index].ea_correct === 1;
+                  const hasAnswer = examDetails[index].ea_answer.length > 0;
+                  const statusColor = isCorrect ? '#28a745' : (hasAnswer ? '#dc3545' : '#6c757d');
+
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => goToQuestion(index)}
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        border: isCurrent ? '3px solid #007bff' : `2px solid ${statusColor}`,
+                        borderRadius: '50%',
+                        background: 'white', // or 'transparent' if preferred
+                        color: statusColor, // Use status color for text to maintain visibility
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                        flexShrink: 0,
+                        transition: 'all 0.3s ease',
+                        boxShadow: isCurrent ? '0 0 0 2px rgba(0,123,255,0.25)' : 'none',
+                      }}
+                    >
+                      {index + 1}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
