@@ -350,7 +350,7 @@ const Results = () => {
       </div>
     );
   }
-  console.log("examDetails : ", examDetails)
+
   const userCorrectCount = examDetails.filter((q) => q.ea_correct === 1).length || 0;
   const attemptedQuestions = examDetails.filter((q) => q.ea_answer.length > 0).length || 0;
   const incorrectAnswers = attemptedQuestions - userCorrectCount;
