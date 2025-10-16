@@ -1,5 +1,5 @@
-import React from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import React from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faTachometerAlt,
   faUser,
@@ -13,9 +13,9 @@ import {
   faBookOpen,
   faQuestion,
   faBook,
-} from '@fortawesome/free-solid-svg-icons'
-import { FaChartBar } from 'react-icons/fa'
-import { CNavGroup, CNavItem } from '@coreui/react'
+} from '@fortawesome/free-solid-svg-icons';
+import { FaChartBar } from 'react-icons/fa';
+import { CNavGroup, CNavItem } from '@coreui/react';
 
 const _nav = [
   {
@@ -39,13 +39,14 @@ const _nav = [
   {
     component: CNavGroup,
     name: 'Exam',
-    to: '/exam',
+    to: '/exam', // Base path for Exam component
     icon: <FontAwesomeIcon icon={faBook} className="me-3" />,
     items: [
+      // Removed /exam-view as it should be dynamic via Exam.jsx
       {
         component: CNavItem,
         name: 'Exams',
-        to: '/exam-view', // Match ExamQuestion route
+        to: '/exam-view',
         icon: <FontAwesomeIcon icon={faBook} className="me-3" />,
       },
 // {
@@ -71,7 +72,7 @@ const _nav = [
     to: '/logout',
     icon: <FontAwesomeIcon icon={faSignOutAlt} className="me-3" />,
   },
-]
+];
 
 export default _nav
 
