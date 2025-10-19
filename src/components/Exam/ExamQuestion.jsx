@@ -423,10 +423,12 @@ setTimerId(timer);
 
   const goNext = async () => {
     const currentQId = questions[currentIndex];
-
+    const isLastQuestion = currentIndex === questions.length - 1;
+    const hasAnswer = responses[currentQId] !== undefined;
+    const isLocked = lockedQuestions.has(currentQId);
     let saveSuccess = true;
 
-    if (!lockedQuestions.has(currentQId) && responses[currentQId] !== undefined) {
+    if (!isLocked && hasAnswer) {
       const success = await submitQuestions(currentQId);
       console.log('Submit question result for', currentQId, ':', success);
 
@@ -446,12 +448,23 @@ setTimerId(timer);
         saveSuccess = false;
         return;
       }
+    } else if (!isLocked && !hasAnswer && isLastQuestion) {
+      // For last question, require an answer to proceed to submit
+      Swal.fire({
+        icon: 'warning',
+        title: 'Answer Required',
+        text: 'Please provide an answer for this question to submit the exam.',
+        confirmButtonText: 'OK'
+      });
+      return;
     }
-    if (currentIndex < questions.length - 1) {
+
+    if (!isLastQuestion) {
       const newIndex = currentIndex + 1;
       setCurrentIndex(newIndex);
       fetchQuestionDetails(questions[newIndex]);
-    } else if (saveSuccess) {
+    } else if (saveSuccess && (isLocked || hasAnswer)) {
+      // For last question, only proceed to submit if saved/locked or just successfully saved
       handleSubmit();
     }
   };
