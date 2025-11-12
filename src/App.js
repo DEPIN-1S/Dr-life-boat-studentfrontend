@@ -11,6 +11,8 @@ import SubmittedExams from './components/Exam/SubmittedExams';
 import Exam from './components/Exam/Exam';
 // import Analysis from './components/Exam/Analysis';
 import Logout from './components/Login/Logout';
+import Quiz from './components/Quiz/Quiz'
+import QuizData from './components/Quiz/QuizData'
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'));
 const Otp = React.lazy(() => import('./components/otp/Otp'));
 const Otpverification = React.lazy(() => import('./components/Otpverification/Otpverification'));
@@ -44,6 +46,8 @@ const AppContent = () => {
         <Route path="/instructions" element={<TestInstructions />} />
         <Route path="/exam-view" element={<ProtectedExamQuestion />} /> {/* Use protected route */}
         <Route path="/exam/result/:seExamId" element={<Results />} />
+        <Route path="/quiz" element={<Quiz />} />
+        <Route path="/quiz/:id" element={<QuizData />} />
         {/* <Route path="/exam/analysis" element={<Analysis />} /> */}
         <Route path="/submitted-exams" element={<SubmittedExams />} />
         <Route path="/logout" element={<Logout />} />

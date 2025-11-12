@@ -13,6 +13,7 @@ import {
   faBookOpen,
   faQuestion,
   faBook,
+  faClipboardQuestion,
 } from '@fortawesome/free-solid-svg-icons';
 import { FaChartBar } from 'react-icons/fa';
 import { CNavGroup, CNavItem } from '@coreui/react';
@@ -49,22 +50,37 @@ const _nav = [
         to: '/exam-view',
         icon: <FontAwesomeIcon icon={faBook} className="me-3" />,
       },
-// {
-//         component: CNavItem,
-//         name: 'Results',
-//         to: '/exam/result/:seExamId', // List of results (base path for overview; dynamic :seId handled separately for details)
-//         icon: <FaChartBar className="me-3" />,
-//       },
+      // {
+      //         component: CNavItem,
+      //         name: 'Results',
+      //         to: '/exam/result/:seExamId', // List of results (base path for overview; dynamic :seId handled separately for details)
+      //         icon: <FaChartBar className="me-3" />,
+      //       },
 
-    // {
-    //     component: CNavItem,
-    //     name: 'Analytics',
-    //     to: '/exam/result',// Base path, dynamic :examId handled by route
-    //     icon: <FaChartBar className="me-3" />,
-    //   },
+      // {
+      //     component: CNavItem,
+      //     name: 'Analytics',
+      //     to: '/exam/result',// Base path, dynamic :examId handled by route
+      //     icon: <FaChartBar className="me-3" />,
+      //   },
 
 
     ],
+  },
+  {
+    component: CNavGroup,
+    name: 'Quiz',
+    to: '/quiz', // Base path for Exam component
+    icon: <FontAwesomeIcon icon={faQuestionCircle} className="me-3" />,
+    items: [
+      // Removed /exam-view as it should be dynamic via Exam.jsx
+      {
+        component: CNavItem,
+        name: 'Quizzes',
+        to: '/quiz',
+        icon: <FontAwesomeIcon icon={faClipboardQuestion} className="me-3" />,
+      },
+    ]
   },
   {
     component: CNavItem,
