@@ -52,6 +52,7 @@ const Widgets = React.lazy(() => import('./views/widgets/Widgets'));
 const Quiz = React.lazy(() => import('./components/Quiz/Quiz'));
 const QuizData = React.lazy(() => import('./components/Quiz/QuizData'));
 const QuizResult = React.lazy(() => import('./components/Quiz/QuizResultAnalysis'))
+const QuizQuestion = React.lazy(() => import('./components/Quiz/QuizQuestion'));
 
 const routes = [
   { path: '/enrolled-courses-description/:id', name: 'EnrolledCourseDescription', element: EnrolledCourseDescription },
@@ -111,6 +112,9 @@ const routes = [
   { path: '/quiz', name: 'Quiz', element: Quiz },
   { path: '/quiz/:id', name: 'QuizData', element: QuizData },
   { path: '/quiz/result/:submissionId', name: 'QuizResult', element: QuizResult },
+  { path: '/quiz/start/:quizId',      name: 'Quiz Question', element: QuizQuestion },
+
+
 ];
 
 export default routes;

@@ -1,9 +1,5 @@
-
-
-
-
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -47,11 +43,20 @@ const useQuestionTimer = (questionId, duration, onTimeout) => {
 const useQuizPersistence = (quizId, data) => {
   const save = useCallback(() => {
     if (!quizId) return;
-    const keys = ["quizResponses", "quizLocked", "quizResults", "currentIdx", "currentQuiz"];
-    keys.forEach(key => {
-      const value = data[key.replace("quiz", "").toLowerCase()] || data[key];
+
+    const keys = ["responses", "locked", "results", "currentIdx", "currentQuizId"];
+    const values = {
+      responses: data.responses,
+      locked: [...data.locked],
+      results: data.results,
+      currentIdx: data.currentIdx,
+      currentQuizId: quizId,
+    };
+
+    keys.forEach((key, i) => {
+      const value = values[key];
       if (value !== undefined) {
-        STORAGE.setItem(key, JSON.stringify(value));
+        STORAGE.setItem(`quiz_${key}`, JSON.stringify(value));
       }
     });
   }, [quizId, data]);
@@ -64,12 +69,9 @@ const useQuizPersistence = (quizId, data) => {
 
 export default function QuizQuestion() {
   const { quizId: paramQuizId } = useParams();
-  const location = useLocation();
   const navigate = useNavigate();
 
-  const stateQuiz = location?.state || JSON.parse(STORAGE.getItem("currentQuiz") || "{}");
-  const quizId = stateQuiz?.qz_id ?? paramQuizId;
-
+  const [quizId, setQuizId] = useState(paramQuizId);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
   const [questionLoading, setQuestionLoading] = useState(false);
@@ -83,13 +85,26 @@ export default function QuizQuestion() {
 
   const timeoutHandled = useRef(new Set());
 
-  // === 1. CHECK IF QUIZ IS ALREADY SUBMITTED (Top Priority) ===
+  // === 1. RESTORE QUIZ ID + REDIRECT IF NEEDED ===
+  useEffect(() => {
+    if (paramQuizId) {
+      setQuizId(paramQuizId);
+      STORAGE.setItem("quiz_currentQuizId", paramQuizId);
+    } else {
+      const savedQuizId = STORAGE.getItem("quiz_currentQuizId");
+      if (savedQuizId) {
+        setQuizId(savedQuizId);
+        navigate(`/quiz/${savedQuizId}`, { replace: true });
+      } else {
+        navigate("/quiz", { replace: true });
+      }
+    }
+  }, [paramQuizId, navigate]);
+
+  // === 2. CHECK IF QUIZ IS ALREADY SUBMITTED ===
   useEffect(() => {
     const checkSubmission = async () => {
-      if (!quizId) {
-        Swal.fire({ icon: "error", title: "Invalid Quiz" }).then(() => navigate("/quiz"));
-        return;
-      }
+      if (!quizId) return;
 
       const token = STORAGE.getItem("token");
       if (!token) {
@@ -107,11 +122,9 @@ export default function QuizQuestion() {
         if (subRes.data.result) {
           const submission = (subRes.data.data || []).find(s => s.qz_id === quizId);
           if (submission) {
-            // QUIZ ALREADY SUBMITTED → GO TO RESULT PAGE
-            const seId = submission.se_id || submission.submission_id || quizId;
             clearQuizData();
-            setLoading(false);
-            navigate(`/quiz/result/${seId}`);
+            const seId = submission.se_id || submission.submission_id || quizId;
+            navigate(`/quiz/result/${seId}`, { replace: true });
             return;
           }
         }
@@ -119,47 +132,47 @@ export default function QuizQuestion() {
         console.warn("Submission check failed, proceeding...", e);
       }
 
-      // Not submitted → load questions
+      // Not submitted → load session + questions
+      restoreSession();
       fetchQuizQuestions();
     };
 
     checkSubmission();
   }, [quizId, navigate]);
 
-  // === 2. RESTORE SESSION (only if not submitted) ===
-  useEffect(() => {
-    if (!quizId) return;
+  // === 3. RESTORE SESSION FROM STORAGE ===
+  const restoreSession = () => {
+    const load = (key) => {
+      try {
+        return JSON.parse(STORAGE.getItem(`quiz_${key}`) || "null");
+      } catch {
+        return null;
+      }
+    };
 
-    const load = key => JSON.parse(STORAGE.getItem(key) || "null");
-    const savedResponses = load("quizResponses") ?? {};
-    const savedLocked = new Set(load("quizLocked") ?? []);
-    const savedResults = load("quizResults") ?? {};
+    const savedResponses = load("responses") ?? {};
+    const savedLocked = new Set(load("locked") ?? []);
+    const savedResults = load("results") ?? {};
     const savedIdx = load("currentIdx") ?? 0;
 
     setResponses(savedResponses);
     setLocked(savedLocked);
     setResults(savedResults);
     setCurrentIdx(savedIdx);
-  }, [quizId]);
+  };
 
-  // Reset timeout tracking
-  useEffect(() => {
-    if (quizId) {
-      timeoutHandled.current = new Set();
-    }
-  }, [quizId]);
-
-  // === 3. PERSISTENCE ===
+  // === 4. PERSISTENCE ===
   useQuizPersistence(quizId, {
     responses,
-    locked: [...locked],
+    locked,
     results,
     currentIdx,
-    currentQuiz: stateQuiz,
   });
 
-  // === 4. FETCH QUESTIONS ===
+  // === 5. FETCH QUESTIONS ===
   const fetchQuizQuestions = async () => {
+    if (!quizId) return;
+
     const token = STORAGE.getItem("token");
     try {
       setLoading(true);
@@ -172,14 +185,10 @@ export default function QuizQuestion() {
       );
 
       if (res.data.result && res.data.data?.length > 0) {
-        setQuestions(res.data.data.map(q => q.q_id));
+        setQuestions(res.data.data);
       } else {
         const msg = res.data.message || "No questions found.";
-        if (msg.toLowerCase().includes("already submitted")) {
-          // Already handled above — do nothing
-        } else {
-          setFetchError(msg);
-        }
+        setFetchError(msg);
       }
     } catch (e) {
       const msg = e?.response?.data?.message || "Failed to load quiz.";
@@ -189,7 +198,7 @@ export default function QuizQuestion() {
     }
   };
 
-  // === 5. FETCH CURRENT QUESTION ===
+  // === 6. FETCH CURRENT QUESTION ===
   const fetchQuestion = async (qId) => {
     if (!qId) return;
     const token = STORAGE.getItem("token");
@@ -230,7 +239,7 @@ export default function QuizQuestion() {
     }
   }, [questions, currentIdx]);
 
-  // === 6. SUBMIT SINGLE QUESTION ===
+  // === 7. SUBMIT SINGLE QUESTION ===
   const submitQuestion = async (qId) => {
     const token = STORAGE.getItem("token");
     const answer = responses[qId];
@@ -276,7 +285,7 @@ export default function QuizQuestion() {
     }
   };
 
-  // === 7. SUBMIT ENTIRE QUIZ ===
+  // === 8. SUBMIT ENTIRE QUIZ ===
   const submitWholeQuiz = async (isTimeout = false) => {
     const token = STORAGE.getItem("token");
 
@@ -307,7 +316,7 @@ export default function QuizQuestion() {
           timer: 1500,
           showConfirmButton: false
         }).then(() => {
-          navigate(`/quiz/result/${seId}`);  // GO TO ANALYSIS PAGE
+          navigate(`/quiz/result/${seId}`);
         });
       } else {
         Swal.fire({ icon: "error", title: "Failed", text: res.data.message });
@@ -318,12 +327,16 @@ export default function QuizQuestion() {
   };
 
   const clearQuizData = () => {
-    ["quizResponses", "quizLocked", "quizResults", "currentIdx", "currentQuiz"].forEach(k =>
-      STORAGE.removeItem(k)
-    );
+    [
+      "responses",
+      "locked",
+      "results",
+      "currentIdx",
+      "currentQuizId",
+    ].forEach(key => STORAGE.removeItem(`quiz_${key}`));
   };
 
-  // === 8. TIMER & NAVIGATION ===
+  // === 9. TIMER & NAVIGATION ===
   const handleQuestionTimeout = async () => {
     const qId = questions[currentIdx];
     if (locked.has(qId) || timeoutHandled.current.has(qId)) return;

@@ -50,6 +50,7 @@ const AppContent = () => {
         <Route path="/exam/result/:seExamId" element={<Results />} />
         <Route path="/submitted-exams" element={<SubmittedExams />} />
         {/* <Route path="/quiz/result/:submissionId" element={<QuizResultAnalysis />} /> */}
+      
         <Route path="/logout" element={<Logout />} />
         <Route path="/404" element={<Page404 />} />
         <Route path="/500" element={<Page500 />} />
