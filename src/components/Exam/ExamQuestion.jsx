@@ -281,7 +281,7 @@ setTimerId(timer);
     const submittedAnswer = responses[questionId];
 
     if (submittedAnswer === undefined) {
-      console.warn(`No answer selected for question ${questionId} at 12:18 PM IST, Tuesday, September 16, 2025`);
+      console.warn(`No answer selected for question ${questionId} `);
       return false;
     }
 

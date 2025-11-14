@@ -8,30 +8,7 @@ import { Star, ChevronRight, Search, Loader2 } from "lucide-react";
 // Change if needed
 const API_BASE = import.meta.env.VITE_BASE_URL || "https://lunarsenterprises.com:6028";
 
-/**
- * Expected API shape (per your sample):
- * [
- *   {
- *     cs_id, cs_heading,
- *     modules: [
- *       {
- *         md_id, md_name,
- *         topics: [
- *           {
- *             tp_id, tp_name,
- *             subtopics: [
- *               {
- *                 st_id, st_name,
- *                 quizzes: { ...quiz } OR [ ...quiz ]
- *               }
- *             ]
- *           }
- *         ]
- *       }
- *     ]
- *   }
- * ]
- */
+
 
 export default function ModuleQuizzesView() {
   const { id } = useParams(); // module id from /quiz/:id
@@ -189,12 +166,13 @@ export default function ModuleQuizzesView() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {(sub.quizzes || []).map((q, i) => {
-                        q.isSubmitted ? (<></>) : (
+                        console.log("Quiz data:", q);
+                        return (
                           <QuizCard
                             key={q.q_id}
                             quiz={q}
                             index={i}
-                            onOpen={() => navigate(`/quiz/start/${q.q_id}`)}
+                            onOpen={() => q.is_submitted ? navigate(`/quiz/result/${q.q_id}`) : navigate(`/quiz/start/${q.q_id}`)}
                           />
                         )
                       })}
@@ -332,7 +310,7 @@ function normalizeApiData(apiData = []) {
           q_module_id: q.q_module_id,
           q_topic_id: q.q_topic_id,
           q_subtopic_id: q.q_subtopic_id,
-          isSubmitted: q.isSubmitted,
+          is_submitted: q.is_submitted,
           assigned: q.assigned,
         })),
       };
@@ -346,3 +324,5 @@ function normalizeApiData(apiData = []) {
 
   return { course, module: moduleMeta, topics };
 }
+
+
