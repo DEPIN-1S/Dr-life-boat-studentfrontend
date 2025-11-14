@@ -18,14 +18,23 @@ export default function QuizResultAnalysis() {
     const fetchResult = async () => {
       const token = sessionStorage.getItem("token");
       try {
-        const res = await axios.post(
-          `${API_BASE}/drlifeboat/student/quiz/submission/data`,
-          { submittedQuiz_id: submissionId },
+        const res = await axios.get(
+          `${API_BASE}/drlifeboat/student/quiz/submission/list`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
         if (res.data.result) {
-          setResult(res.data);
+          const quizes = res.data.data
+          let matchingExam = quizes.find(quiz => quiz.q_id === parseInt(submissionId));
+          // Fallback to se_exam_id if not found
+          if (!matchingExam) {
+            matchingExam = quizes.find(quiz => quiz.sq_quiz_id === parseInt(submissionId));
+          }
+          if (matchingExam) {
+            setResult(matchingExam);
+          } else {
+            console.error("No matching exam found for submissionId:", submissionId);
+          }
         }
       } catch (e) {
         console.error(e);
@@ -39,7 +48,7 @@ export default function QuizResultAnalysis() {
   if (loading) return <div className="text-center py-10">Loading results...</div>;
   if (!result) return <div className="text-center py-10 text-red-600">No result found.</div>;
 
-  const { score, total_questions, correct, incorrect, unanswered, duration, created_at, q_name } = result;
+  const { sq_score, total_questions, correct, incorrect, unanswered, sq_duration, created_at, q_name } = result;
 
   const data = [
     { name: 'Correct', value: correct, fill: '#10b981' },
@@ -72,7 +81,7 @@ export default function QuizResultAnalysis() {
         {/* Score Overview */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white p-5 rounded-xl shadow-sm border text-center">
-            <div className="text-3xl font-bold text-blue-600">{score}/{total_questions}</div>
+            <div className="text-3xl font-bold text-blue-600">{sq_score}/{total_questions}</div>
             <div className="text-sm text-gray-600 mt-1">Score</div>
           </div>
           <div className="bg-white p-5 rounded-xl shadow-sm border text-center">
@@ -84,7 +93,7 @@ export default function QuizResultAnalysis() {
             <div className="text-sm text-gray-600 mt-1">Correct</div>
           </div>
           <div className="bg-white p-5 rounded-xl shadow-sm border text-center">
-            <div className="text-3xl font-bold text-gray-600">{duration}</div>
+            <div className="text-3xl font-bold text-gray-600">{sq_duration}</div>
             <div className="text-sm text-gray-600 mt-1">Time Taken</div>
           </div>
         </div>
@@ -126,7 +135,7 @@ export default function QuizResultAnalysis() {
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-xl shadow-sm">
           <h3 className="text-lg font-semibold mb-2">Well Done!</h3>
           <p className="text-blue-50">
-            You scored <strong>{score}/{total_questions}</strong> in this quiz.
+            You scored <strong>{sq_score}/{total_questions}</strong> in this quiz.
             {percent >= 70 ? " Excellent performance!" : " Keep practicing!"}
           </p>
         </div>

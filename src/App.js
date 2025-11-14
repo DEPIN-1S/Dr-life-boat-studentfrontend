@@ -7,7 +7,7 @@ import TestInstructions from './components/Exam/TestInstructions';
 import ProtectedExamQuestion from './components/Exam/ProtectedExamQuestion'; // Import protected route
 import Results from './components/Exam/Results';
 // const Analysis = React.lazy(() => import('./components/Exam/Analysis'));
-import SubmittedExams from './components/Exam/SubmittedExams';
+// import SubmittedExams from './components/Exam/SubmittedExams';
 import Exam from './components/Exam/Exam';
 // import Analysis from './components/Exam/Analysis';
 import Logout from './components/Login/Logout';
@@ -48,7 +48,7 @@ const AppContent = () => {
         <Route path="/instructions" element={<TestInstructions />} />
         <Route path="/exam-view" element={<ProtectedExamQuestion />} /> {/* Use protected route */}
         <Route path="/exam/result/:seExamId" element={<Results />} />
-        <Route path="/submitted-exams" element={<SubmittedExams />} />
+        {/* <Route path="/submitted-exams" element={<SubmittedExams />} /> */}
         {/* <Route path="/quiz/result/:submissionId" element={<QuizResultAnalysis />} /> */}
       
         <Route path="/logout" element={<Logout />} />
