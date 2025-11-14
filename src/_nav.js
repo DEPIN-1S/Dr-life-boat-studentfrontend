@@ -47,7 +47,7 @@ const _nav = [
       {
         component: CNavItem,
         name: 'Exams',
-        to: '/exam-view',
+        to: '/exam',
         icon: <FontAwesomeIcon icon={faBook} className="me-3" />,
       },
       // {

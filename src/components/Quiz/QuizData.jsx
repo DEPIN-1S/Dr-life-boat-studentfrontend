@@ -188,14 +188,16 @@ export default function ModuleQuizzesView() {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {(sub.quizzes || []).map((q, i) => (
-                        <QuizCard
-                          key={q.q_id}
-                          quiz={q}
-                          index={i}
-                          onOpen={() => navigate(`/quiz/start/${q.q_id}`)}
-                        />
-                      ))}
+                      {(sub.quizzes || []).map((q, i) => {
+                        q.isSubmitted ? (<></>) : (
+                          <QuizCard
+                            key={q.q_id}
+                            quiz={q}
+                            index={i}
+                            onOpen={() => navigate(`/quiz/start/${q.q_id}`)}
+                          />
+                        )
+                      })}
                     </div>
                   </div>
                 ))}
@@ -330,6 +332,7 @@ function normalizeApiData(apiData = []) {
           q_module_id: q.q_module_id,
           q_topic_id: q.q_topic_id,
           q_subtopic_id: q.q_subtopic_id,
+          isSubmitted: q.isSubmitted,
           assigned: q.assigned,
         })),
       };

@@ -1,5 +1,5 @@
-import { element } from 'prop-types';
 import React from 'react';
+
 
 const Dashboard = React.lazy(() => import('../src/components/Dashboard/Dashboard'));
 const Enrolled = React.lazy(() => import('../src/components/Enrolled/Enrolled'));
@@ -49,6 +49,8 @@ const Badges = React.lazy(() => import('./views/notifications/badges/Badges'));
 const Modals = React.lazy(() => import('./views/notifications/modals/Modals'));
 const Toasts = React.lazy(() => import('./views/notifications/toasts/Toasts'));
 const Widgets = React.lazy(() => import('./views/widgets/Widgets'));
+const Quiz = React.lazy(() => import('./components/Quiz/Quiz'));
+const QuizData = React.lazy(() => import('./components/Quiz/QuizData'));
 
 const routes = [
   { path: '/enrolled-courses-description/:id', name: 'EnrolledCourseDescription', element: EnrolledCourseDescription },
@@ -105,6 +107,8 @@ const routes = [
   { path: '/notifications/modals', name: 'Modals', element: Modals },
   { path: '/notifications/toasts', name: 'Toasts', element: Toasts },
   { path: '/widgets', name: 'Widgets', element: Widgets },
+  { path: '/quiz', name: 'Quiz', element: Quiz },
+  { path: '/quiz/:id', name: 'QuizData', element: QuizData },
 ];
 
 export default routes;

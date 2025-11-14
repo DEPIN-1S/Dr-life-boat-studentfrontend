@@ -42,13 +42,9 @@ const AppContent = () => {
         <Route path="/otp-verification" element={<Otpverification />} />
         <Route path="/forget-password" element={<Forget />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/exam" element={<Exam />} />
         <Route path="/instructions" element={<TestInstructions />} />
         <Route path="/exam-view" element={<ProtectedExamQuestion />} /> {/* Use protected route */}
         <Route path="/exam/result/:seExamId" element={<Results />} />
-        <Route path="/quiz" element={<Quiz />} />
-        <Route path="/quiz/:id" element={<QuizData />} />
-        {/* <Route path="/exam/analysis" element={<Analysis />} /> */}
         <Route path="/submitted-exams" element={<SubmittedExams />} />
         <Route path="/logout" element={<Logout />} />
         <Route path="/404" element={<Page404 />} />
