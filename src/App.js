@@ -13,6 +13,8 @@ import Exam from './components/Exam/Exam';
 import Logout from './components/Login/Logout';
 import Quiz from './components/Quiz/Quiz'
 import QuizData from './components/Quiz/QuizData'
+import QuizQuestion from './components/Quiz/QuizQuestion'
+import QuizResultAnalysis from './components/Quiz/QuizResultAnalysis';
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'));
 const Otp = React.lazy(() => import('./components/otp/Otp'));
 const Otpverification = React.lazy(() => import('./components/Otpverification/Otpverification'));
@@ -22,6 +24,7 @@ const Register = React.lazy(() => import('./components/Register/Register'));
 const Login = React.lazy(() => import('./components/Login/Login'));
 const Page404 = React.lazy(() => import('./views/pages/page404/Page404'));
 const Page500 = React.lazy(() => import('./views/pages/page500/Page500'));
+
 
 const AppContent = () => {
   const location = useLocation();
@@ -48,8 +51,10 @@ const AppContent = () => {
         <Route path="/exam/result/:seExamId" element={<Results />} />
         <Route path="/quiz" element={<Quiz />} />
         <Route path="/quiz/:id" element={<QuizData />} />
+        <Route path="/quiz/start/:quizId" element={<QuizQuestion />} />
         {/* <Route path="/exam/analysis" element={<Analysis />} /> */}
         <Route path="/submitted-exams" element={<SubmittedExams />} />
+        <Route path="/quiz/result/:submissionId" element={<QuizResultAnalysis />} />
         <Route path="/logout" element={<Logout />} />
         <Route path="/404" element={<Page404 />} />
         <Route path="/500" element={<Page500 />} />

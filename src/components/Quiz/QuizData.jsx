@@ -8,30 +8,7 @@ import { Star, ChevronRight, Search, Loader2 } from "lucide-react";
 // Change if needed
 const API_BASE = import.meta.env.VITE_BASE_URL || "https://lunarsenterprises.com:6028";
 
-/**
- * Expected API shape (per your sample):
- * [
- *   {
- *     cs_id, cs_heading,
- *     modules: [
- *       {
- *         md_id, md_name,
- *         topics: [
- *           {
- *             tp_id, tp_name,
- *             subtopics: [
- *               {
- *                 st_id, st_name,
- *                 quizzes: { ...quiz } OR [ ...quiz ]
- *               }
- *             ]
- *           }
- *         ]
- *       }
- *     ]
- *   }
- * ]
- */
+
 
 export default function ModuleQuizzesView() {
   const { id } = useParams(); // module id from /quiz/:id
@@ -343,3 +320,5 @@ function normalizeApiData(apiData = []) {
 
   return { course, module: moduleMeta, topics };
 }
+
+
