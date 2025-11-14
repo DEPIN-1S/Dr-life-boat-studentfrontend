@@ -48,7 +48,7 @@ export default function QuizResultAnalysis() {
   if (loading) return <div className="text-center py-10">Loading results...</div>;
   if (!result) return <div className="text-center py-10 text-red-600">No result found.</div>;
 
-  const { sq_score, total_questions, correct, incorrect, unanswered, sq_duration, created_at, q_name } = result;
+  const { sq_score, total_questions, correct, incorrect, unanswered, sq_duration, created_at, q_name, total_mark, attempted_questions } = result;
 
   const data = [
     { name: 'Correct', value: correct, fill: '#10b981' },
@@ -56,7 +56,7 @@ export default function QuizResultAnalysis() {
     { name: 'Unanswered', value: unanswered, fill: '#f59e0b' },
   ];
 
-  const percent = total_questions > 0 ? ((score / total_questions) * 100).toFixed(1) : 0;
+  const percent = total_questions > 0 ? ((sq_score / total_mark) * 100).toFixed(1) : 0;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -81,7 +81,7 @@ export default function QuizResultAnalysis() {
         {/* Score Overview */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white p-5 rounded-xl shadow-sm border text-center">
-            <div className="text-3xl font-bold text-blue-600">{sq_score}/{total_questions}</div>
+            <div className="text-3xl font-bold text-blue-600">{sq_score}</div>
             <div className="text-sm text-gray-600 mt-1">Score</div>
           </div>
           <div className="bg-white p-5 rounded-xl shadow-sm border text-center">
@@ -89,8 +89,8 @@ export default function QuizResultAnalysis() {
             <div className="text-sm text-gray-600 mt-1">Percentage</div>
           </div>
           <div className="bg-white p-5 rounded-xl shadow-sm border text-center">
-            <div className="text-3xl font-bold text-emerald-600">{correct}</div>
-            <div className="text-sm text-gray-600 mt-1">Correct</div>
+            <div className="text-3xl font-bold text-emerald-600">{attempted_questions + "/" + total_questions}</div>
+            <div className="text-sm text-gray-600 mt-1">Attempted / Total Questions</div>
           </div>
           <div className="bg-white p-5 rounded-xl shadow-sm border text-center">
             <div className="text-3xl font-bold text-gray-600">{sq_duration}</div>
@@ -99,7 +99,7 @@ export default function QuizResultAnalysis() {
         </div>
 
         {/* Pie Chart */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border mb-8">
+        {/* <div className="bg-white p-6 rounded-xl shadow-sm border mb-8">
           <h3 className="text-lg font-semibold mb-4">Performance Breakdown</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -129,13 +129,13 @@ export default function QuizResultAnalysis() {
               </div>
             ))}
           </div>
-        </div>
+        </div> */}
 
         {/* Summary */}
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-xl shadow-sm">
           <h3 className="text-lg font-semibold mb-2">Well Done!</h3>
           <p className="text-blue-50">
-            You scored <strong>{sq_score}/{total_questions}</strong> in this quiz.
+            You scored <strong>{sq_score}/{total_mark}</strong> in this quiz.
             {percent >= 70 ? " Excellent performance!" : " Keep practicing!"}
           </p>
         </div>
