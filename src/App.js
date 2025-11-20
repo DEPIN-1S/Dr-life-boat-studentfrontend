@@ -15,6 +15,7 @@ import Quiz from './components/Quiz/Quiz'
 import QuizData from './components/Quiz/QuizData'
 import QuizQuestion from './components/Quiz/QuizQuestion'
 import QuizResultAnalysis from './components/Quiz/QuizResultAnalysis';
+import StudentProfile from './components/studentProfile/StudentProfile';
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'));
 const Otp = React.lazy(() => import('./components/otp/Otp'));
 const Otpverification = React.lazy(() => import('./components/Otpverification/Otpverification'));
@@ -50,11 +51,12 @@ const AppContent = () => {
         <Route path="/exam/result/:seExamId" element={<Results />} />
         {/* <Route path="/submitted-exams" element={<SubmittedExams />} /> */}
         {/* <Route path="/quiz/result/:submissionId" element={<QuizResultAnalysis />} /> */}
-      
+
         <Route path="/logout" element={<Logout />} />
         <Route path="/404" element={<Page404 />} />
         <Route path="/500" element={<Page500 />} />
         <Route path="*" element={<DefaultLayout />} />
+         {/* <Route path="/student/profile" element={<StudentProfile/>} /> */}
       </Routes>
     </Suspense>
   );

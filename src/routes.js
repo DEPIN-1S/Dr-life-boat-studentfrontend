@@ -53,7 +53,7 @@ const Quiz = React.lazy(() => import('./components/Quiz/Quiz'));
 const QuizData = React.lazy(() => import('./components/Quiz/QuizData'));
 const QuizResult = React.lazy(() => import('./components/Quiz/QuizResultAnalysis'))
 const QuizQuestion = React.lazy(() => import('./components/Quiz/QuizQuestion'));
-
+const StudentProfile = React.lazy(() => import('./components/studentProfile/StudentProfile'));
 const routes = [
   { path: '/enrolled-courses-description/:id', name: 'EnrolledCourseDescription', element: EnrolledCourseDescription },
   { path: '/lesson-player', name: 'Lesson', element: LessonPlayer },
@@ -113,6 +113,8 @@ const routes = [
   { path: '/quiz/:id', name: 'QuizData', element: QuizData },
   { path: '/quiz/result/:submissionId', name: 'QuizResult', element: QuizResult },
   { path: '/quiz/start/:quizId',      name: 'Quiz Question', element: QuizQuestion },
+  { path: '/profile', name: 'Profile', element: StudentProfile },
+
 
 
 ];

@@ -162,12 +162,12 @@ const Lesson = ({ data, onFileSelect }) => {
       case 'chapters':
         return (
           <div className="lesson-container">
-            <h4>{data.heading}</h4>
-            {data.modules?.map((module, moduleIndex) => (
-              <div key={module.id} className="lesson-chapter">
+            <h4>{data?.heading}</h4>
+            {data?.modules?.map((module, moduleIndex) => (
+              <div key={module?.id} className="lesson-chapter">
                 <div className="lesson-header" onClick={() => toggleModule(moduleIndex)}>
                   <div style={{ display: 'flex', alignItems: 'center' }}>
-                    {module.image ? (
+                    {module?.image ? (
                       <img
                         src={`${import.meta.env.VITE_BASE_URL}/${module.image}`}
                         onError={(e) => {
@@ -179,7 +179,7 @@ const Lesson = ({ data, onFileSelect }) => {
                     ) : (
                       <div style={{ height: '30px', width: '30px', marginRight: '10px' }} />
                     )}
-                    {module.name}
+                    {module?.name}
                   </div>
                   {openModules.includes(moduleIndex) ? <FaChevronUp /> : <FaChevronDown />}
                 </div>
@@ -327,7 +327,7 @@ const Lesson = ({ data, onFileSelect }) => {
           onClick={() => setActiveTab('chapters')}
           className={activeTab === 'chapters' ? 'active' : ''}
         >
-          Chapters <span className="count">{data.modules?.length}</span>
+          Chapters <span className="count">{data?.modules?.length}</span>
         </button>
         {/* <button
           onClick={() => setActiveTab('videos')}

@@ -963,3 +963,81 @@
     width: 100%;
   }
 }
+
+
+/* === Option with Image Support === */
+.option {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 18px;
+  padding: 14px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  background: #fafafa;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.option:hover {
+  border-color: #007bff;
+  background: #f8fbff;
+}
+
+.option.selected {
+  border-color: #28a745;
+  background: #f4fdf6;
+}
+
+.option.has-image {
+  padding-bottom: 10px;
+}
+
+.option input {
+  margin-right: 12px;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.option-content {
+  display: flex;
+  flex: 1;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.option-letter {
+  font-weight: bold;
+  color: #007bff;
+  min-width: 28px;
+  font-size: 1.1em;
+  margin-top: 2px;
+}
+
+.option-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.option-text {
+  line-height: 1.6;
+  color: #333;
+}
+
+.option-image-container {
+  margin-top: 10px;
+  text-align: center;
+  padding: 8px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+}
+
+.option-image {
+  max-width: 100%;
+  max-height: 320px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}

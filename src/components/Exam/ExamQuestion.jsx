@@ -1,11 +1,12 @@
-
-import React, { useEffect, useState,useRef } from 'react';
+// ExamQuestion.jsx
+import React, { useEffect, useState, useRef } from 'react';
 import './ExamQuestion.css';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
-import { useLocation, useNavigate, useParams } from 'react-router-dom'; // Ensure this import is present
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import axios from 'axios';
-import { CSpinner } from '@coreui/react'; // Ensure this import is present if used
+import { CSpinner } from '@coreui/react';
+import AdaptiveExam from '../../util/exam'; // updated class filename
 
 const ExamQuestion = () => {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ const ExamQuestion = () => {
   const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
-  const stateExam = location?.state || JSON.parse(sessionStorage.getItem('currentExam') || '{}');
+  const stateExam = location?.state || JSON.parse(localStorage.getItem('currentExam') || '{}');
   const examId = stateExam?.ex_id;
   const examMinutes = stateExam?.ex_duration || 0;
   const [lockedQuestions, setLockedQuestions] = useState(new Set());
@@ -22,303 +23,382 @@ const ExamQuestion = () => {
   const [markedReview, setMarkedReview] = useState(new Set());
   const [timeLeft, setTimeLeft] = useState(examMinutes * 60 || 0);
   const [showModal, setShowModal] = useState(false);
-  const [questions, setQuestions] = useState([]);
-  const [currentQuestion, setCurrentQuestion] = useState(null);
+  const [questions, setQuestions] = useState([]); // flat array of question_ids for palette
+  const [currentQuestion, setCurrentQuestion] = useState(null); // full question data fetched from API
   const [questionStartTime, setQuestionStartTime] = useState(Date.now());
   const [timeUp, setTimeUp] = useState(false);
-  const [timerId, setTimerId] = useState(null);
+  const timerRef = useRef(null);
   const endTimeRef = useRef(null);
+  const [adaptiveExam, setAdaptiveExam] = useState(null);
+  const [allQuestionsData, setAllQuestionsData] = useState([]); // original list of { question_id, difficulty_level }
+
+  // BASE URL helper
+  const baseUrl = import.meta.env.VITE_BASE_URL || 'https://lunarsenterprises.com:6028';
+  const token = sessionStorage.getItem('token');
 
   useEffect(() => {
-    console.log('Location state in ExamQuestion:', location.state);
-    console.log('Effective stateExam:', stateExam);
-
     if (!examId) {
-      console.log('Exam ID is missing');
-      Swal.fire({
-        icon: 'error',
-        title: 'Invalid Exam',
-        text: 'Please select a valid exam from the list.',
-      }).then(() => {
-        navigate('/exam');
-      });
+      Swal.fire('Error', 'Invalid exam access', 'error').then(() => navigate('/exam'));
       return;
     }
-    console.log(`ExamQuestion loaded with examId: ${examId} at 12:18 PM IST, Tuesday, September 16, 2025`);
 
-    const savedResponses = sessionStorage.getItem('examResponses');
-    const savedLocked = sessionStorage.getItem('lockedQuestions');
-    const savedMarked = sessionStorage.getItem('markedReview');
-    const savedEndTime = sessionStorage.getItem('examEndTime');
-
+    // restore saved small state (responses/locked/marked)
+    const savedResponses = localStorage.getItem('examResponses');
+    const savedLocked = localStorage.getItem('lockedQuestions');
+    const savedMarked = localStorage.getItem('markedReview');
     if (savedResponses) setResponses(JSON.parse(savedResponses));
     if (savedLocked) setLockedQuestions(new Set(JSON.parse(savedLocked)));
     if (savedMarked) setMarkedReview(new Set(JSON.parse(savedMarked)));
 
-    sessionStorage.setItem('currentExamId', examId.toString());
-
-    // let endTime = savedEndTime;
-    // if (!endTime || isNaN(parseInt(endTime))) {
-    //   endTime = Date.now() + examMinutes * 60 * 1000;
-    //   sessionStorage.setItem('examEndTime', endTime.toString());
-    // }
-
-
-    let calculatedEndTime = savedEndTime;
-if (!calculatedEndTime || isNaN(parseInt(calculatedEndTime))) {
-  calculatedEndTime = Date.now() + examMinutes * 60 * 1000;
-  sessionStorage.setItem('examEndTime', calculatedEndTime.toString());
-}
-endTimeRef.current = calculatedEndTime;
-
-    // Initial time check
-    const initialDiff = Math.floor((parseInt(calculatedEndTime) - Date.now()) / 1000);
-    if (initialDiff <= 0) {
+    // timer logic (unchanged)
+    const EXAM_START_KEY = `examStartTime_${examId}`;
+    let examStartTime = parseInt(localStorage.getItem(EXAM_START_KEY) || '0');
+    if (!examStartTime || isNaN(examStartTime)) {
+      examStartTime = Date.now();
+      localStorage.setItem(EXAM_START_KEY, examStartTime.toString());
+    }
+    const totalMs = examMinutes * 60 * 1000;
+    const endTime = examStartTime + totalMs;
+    endTimeRef.current = endTime;
+    const timeLeftNow = Math.floor((endTime - Date.now()) / 1000);
+    if (timeLeftNow <= 0) {
       setTimeLeft(0);
       setTimeUp(true);
       handleTimeout();
       return;
-    } else {
-      setTimeLeft(initialDiff);
     }
+    setTimeLeft(timeLeftNow);
 
+    // LOAD adaptive state (either from localStorage or fresh from API)
+    loadAdaptiveState();
 
-
-    fetchQuestionsList(examId);
-
-    // const timer = setInterval(() => {
-    //   const examEndTime = sessionStorage.getItem('examEndTime');
-    //   console.log('Exam end time from sessionStorage:', examEndTime);
-    //   if (!examEndTime) return;
-
-    //   const diff = Math.floor((parseInt(examEndTime) - Date.now()) / 1000);
-    //   if (diff <= 0) {
-    //     setTimeLeft(0);
-    //     setTimeUp(true);
-    //     clearInterval(timer);
-    //     handleTimeout();
-    //   } else {
-    //     setTimeLeft(diff);
-    //   }
-    // }, 1000);
-
-    // setTimerId(timer);
-
-
-const timer = setInterval(() => {
-  const examEndTime = endTimeRef.current;
-  if (!examEndTime) return;
-
-  const diff = Math.floor((parseInt(examEndTime) - Date.now()) / 1000);
-  if (diff <= 0) {
-    setTimeLeft(0);
-    setTimeUp(true);
-    clearInterval(timer);
-    handleTimeout();
-  } else {
-    setTimeLeft(diff);
-  }
-}, 1000);
-
-setTimerId(timer);
+    // start timer
+    const startTimer = () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      timerRef.current = setInterval(() => {
+        const remaining = Math.floor((endTimeRef.current - Date.now()) / 1000);
+        if (remaining <= 0) {
+          setTimeLeft(0);
+          setTimeUp(true);
+          clearInterval(timerRef.current);
+          timerRef.current = null;
+          handleTimeout();
+        } else {
+          setTimeLeft(remaining);
+        }
+      }, 1000);
+    };
+    startTimer();
 
     return () => {
-      if (timerId) clearInterval(timerId);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [examId, navigate, examMinutes]);
 
-  const handleTimeout = async () => {
-    try {
-      const result = await submitExam(true);
-      if (result.success) {
-        sessionStorage.removeItem('examEndTime');
-        clearExamData();
-        Swal.fire({
-          icon: 'warning',
-          title: 'Time Up!',
-          text: 'Exam submitted due to time expiration. Returning to exam list.',
-          confirmButtonText: 'OK',
-          allowOutsideClick: false,
-          allowEscapeKey: false
-        }).then(() => {
-          navigate('/exam');
-        });
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Submission Failed',
-          text: 'Failed to submit exam on timeout. Returning to exam list.',
-          confirmButtonText: 'OK'
-        }).then(() => {
-          clearExamData();
-          navigate('/exam');
-        });
-      }
-    } catch (err) {
-      console.error('Error during timeout submission:', err);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Error submitting exam on timeout. Returning to exam list.',
-        confirmButtonText: 'OK'
-      }).then(() => {
-        clearExamData();
-        navigate('/exam');
-      });
-    }
-  };
-
+  // persist simple UI state
   useEffect(() => {
-    sessionStorage.setItem('examResponses', JSON.stringify(responses));
-    sessionStorage.setItem('lockedQuestions', JSON.stringify([...lockedQuestions]));
-    sessionStorage.setItem('markedReview', JSON.stringify([...markedReview]));
+    localStorage.setItem('examResponses', JSON.stringify(responses));
+    localStorage.setItem('lockedQuestions', JSON.stringify([...lockedQuestions]));
+    localStorage.setItem('markedReview', JSON.stringify([...markedReview]));
   }, [responses, lockedQuestions, markedReview]);
 
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    setQuestionStartTime(Date.now());
-    if (questions.length > 0) {
-      fetchQuestionDetails(questions[currentIndex]);
-    }
-  }, [currentIndex, questions]);
-
-  const clearExamData = () => {
-    sessionStorage.removeItem('examResponses');
-    sessionStorage.removeItem('lockedQuestions');
-    sessionStorage.removeItem('markedReview');
-    sessionStorage.removeItem('examEndTime');
-    sessionStorage.removeItem('currentExamId');
-    sessionStorage.removeItem('examAnswerValues');
-    sessionStorage.removeItem('currentExam');
-  };
-
-  const fetchQuestionsList = async (examId) => {
-    const Bearer = sessionStorage.getItem('token');
-    const baseUrl = import.meta.env.VITE_BASE_URL || 'https://lunarsenterprises.com:6028';
-
+  // --- New: loadAdaptiveState combines reading /student/exam/data and localStorage resume ---
+  const loadAdaptiveState = async () => {
     try {
-      setFetchError(null);
-      setLoading(true);
-      const response = await axios({
-        url: `${baseUrl}/drlifeboat/student/exam/data`,
-        headers: {
-          Accept: 'application/json',
-          Authorization: `Bearer ${Bearer}`,
-        },
-        data: { examId: parseInt(examId) },
-        method: 'POST',
-      });
-      if (response.data.result) {
-        const ids = response.data.data || [];
-        setQuestions(ids);
-        if (ids.length > 0) {
-          fetchQuestionDetails(ids[0]);
+      // check saved adaptive state first
+      const savedListKey = `adaptive_list_${examId}`;
+      const savedStateKey = `adaptive_state_${examId}`;
+      const savedListJson = localStorage.getItem(savedListKey);
+      const savedStateJson = localStorage.getItem(savedStateKey);
+
+      let listData;
+      if (savedListJson) {
+        listData = JSON.parse(savedListJson);
+      } else {
+        // fetch /student/exam/data
+        const res = await axios({
+          url: `${baseUrl}/drlifeboat/student/exam/data`,
+          method: 'POST',
+          headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
+          data: { examId: parseInt(examId) },
+        });
+
+        if (!res.data?.result) {
+          setFetchError(res.data?.message || 'Failed to fetch question list');
+          setLoading(false);
+          return;
+        }
+        listData = res.data.data || [];
+        // save list
+        localStorage.setItem(savedListKey, JSON.stringify(listData));
+      }
+
+      setAllQuestionsData(listData);
+      // create flat palette questions array (ids)
+      const flatIds = listData.map(it => it.question_id);
+      setQuestions(flatIds);
+
+      // If saved adaptive state exists -> resume engine from it
+      if (savedStateJson) {
+        const savedState = JSON.parse(savedStateJson);
+        const engine = AdaptiveExam.from(listData, savedState);
+        setAdaptiveExam(engine);
+
+        // If there's a currentQuestionId in saved state -> fetch its details
+        if (savedState.currentQuestionId) {
+          fetchQuestionDetails(savedState.currentQuestionId);
+          // set currentIndex to where this id appears in original flatIds if found
+          const idx = flatIds.findIndex(id => id === savedState.currentQuestionId);
+          if (idx !== -1) setCurrentIndex(idx);
         } else {
-          setFetchError('No questions available for this exam.');
+          // no currentQuestionId saved, ask engine for next
+          const next = engine.getNextQuestion(null);
+          if (next) {
+            localStorage.setItem(savedStateKey, JSON.stringify(engine.serialize()));
+            fetchQuestionDetails(next.question_id);
+            const idx = flatIds.findIndex(id => id === next.question_id);
+            if (idx !== -1) setCurrentIndex(idx);
+          } else {
+            setFetchError('No questions available to start the exam.');
+          }
         }
       } else {
-        setFetchError(response.data.message || 'Failed to fetch questions.');
+        // Fresh start: create engine from listData (start at min level automatically)
+        const engine = AdaptiveExam.from(listData, null);
+        setAdaptiveExam(engine);
+        // pick first
+        const first = engine.getNextQuestion(null);
+        if (first) {
+          // save state and list
+          localStorage.setItem(savedListKey, JSON.stringify(listData));
+          localStorage.setItem(savedStateKey, JSON.stringify(engine.serialize()));
+          fetchQuestionDetails(first.question_id);
+          const idx = flatIds.findIndex(id => id === first.question_id);
+          if (idx !== -1) setCurrentIndex(idx);
+        } else {
+          setFetchError('No questions available to start the exam.');
+        }
       }
     } catch (err) {
-      console.error('Error fetching questions list:', err);
-      setFetchError(err.response?.data?.message || err.message || 'Failed to fetch questions. Please try again.');
+      console.error('loadAdaptiveState error:', err);
+      setFetchError('Failed to load questions. Try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchQuestionDetails = async (questionId) => {
-    const Bearer = sessionStorage.getItem('token');
-    const baseUrl = import.meta.env.VITE_BASE_URL || 'https://lunarsenterprises.com:6028';
+  const getStatusClass = (qId) => (lockedQuestions.has(qId) ? 'green' : markedReview.has(qId) ? 'blue' : 'gray');
 
+  // --- fetch question details (existing endpoint) ---
+  // const fetchQuestionDetails = async (questionId) => {
+  //   try {
+  //     const res = await axios({
+  //       url: `${baseUrl}/drlifeboat/student/exam/question`,
+  //       method: 'POST',
+  //       headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
+  //       data: { examId, exam_question_id: questionId },
+  //     });
+
+  //     if (res.data?.result) {
+  //       const q = res.data.data;
+  //       // normalize q_question into array
+  //       if (!Array.isArray(q.q_question)) {
+  //         q.q_question = (typeof q.q_question === 'string') ? [q.q_question] : [];
+  //       }
+  //       q.questionImages = q.question_images ? q.question_images.split(',').map(s => s.trim()).filter(Boolean) : [];
+  //       // set with a unique id field
+  //       const qid = q.id || q.eq_id || q.exam_question_id || questionId;
+  //       setCurrentQuestion({ ...q, id: qid });
+  //       // scroll & reset timer for question time
+  //       window.scrollTo({ top: 0, behavior: 'smooth' });
+  //       setQuestionStartTime(Date.now());
+  //     } else {
+  //       console.warn('fetchQuestionDetails message:', res.data?.message);
+  //     }
+  //   } catch (err) {
+  //     console.error('Error fetching question details:', err);
+  //   }
+  // };
+  const fetchQuestionDetails = async (questionId) => {
     try {
-      const response = await axios({
+      const res = await axios({
         url: `${baseUrl}/drlifeboat/student/exam/question`,
-        headers: {
-          Accept: 'application/json',
-          Authorization: `Bearer ${Bearer}`,
-        },
-        data: { examId, exam_question_id: questionId },
         method: 'POST',
+        headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
+        data: { examId, exam_question_id: questionId },
       });
-      if (response.data.result) {
-        let data = response.data.data;
-        // Handle q_question as array of HTML strings - keep for rendering with dangerouslySetInnerHTML
-        if (!Array.isArray(data.q_question)) {
-          if (typeof data.q_question === 'string') {
-            data.q_question = [data.q_question];
-          } else {
-            data.q_question = [];
-          }
+
+      if (res.data?.result) {
+        let q = res.data.data;
+
+        // Normalize q_question
+        if (!Array.isArray(q.q_question)) {
+          q.q_question = typeof q.q_question === 'string' ? [q.q_question] : [];
         }
-        // Handle question_images - split by comma if multiple
-        if (data.question_images) {
-          data.questionImages = data.question_images.split(',').map(img => img.trim()).filter(Boolean);
-        } else {
-          data.questionImages = [];
+
+        // CRITICAL FIX: Support both old and new image fields
+        let imagePaths = [];
+
+        // Method 1: Old way (string)
+        if (q.question_images) {
+          imagePaths = q.question_images
+            .split(',')
+            .map(s => s.trim())
+            .filter(Boolean);
         }
-        setCurrentQuestion(data);
-      } else {
-        console.log(response.data.message);
+
+        // Method 2: New way (array of objects) → PRIORITY
+        if (Array.isArray(q.q_question_image) && q.q_question_image.length > 0) {
+          imagePaths = q.q_question_image
+            .map(img => img.qi_file)
+            .filter(Boolean);
+        }
+
+        // Optional: fallback to explanation/ruleout images if needed (rare)
+        // if (imagePaths.length === 0 && q.q_explanation_image?.length) { ... }
+
+        const qid = q.id || q.eq_id || q.exam_question_id || questionId;
+
+        setCurrentQuestion({
+          ...q,
+          id: qid,
+          questionImages: imagePaths, // This will now work perfectly
+        });
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setQuestionStartTime(Date.now());
       }
     } catch (err) {
-      console.error('Error fetching question details:', err);
-      console.log('Error fetching question details');
+      console.error('Error fetching question:', err);
+      Swal.fire('Error', 'Failed to load question.', 'error');
     }
   };
+  // --- submit a single question (uses your existing submit endpoint) ---
+  // const submitQuestions = async (questionId) => {
+  //   const submittedAnswer = responses[questionId];
+  //   if (submittedAnswer === undefined) {
+  //     console.warn(`No answer selected for question ${questionId}`);
+  //     return false;
+  //   }
 
-  const secondsToTimeString = (seconds) => {
-    const safeSeconds = isNaN(seconds) ? 0 : Math.max(0, seconds);
-    const hrs = Math.floor(safeSeconds / 3600);
-    const mins = Math.floor((safeSeconds % 3600) / 60);
-    const secs = safeSeconds % 60;
-    return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
+  //   // map index-based selection to option IDs
+  //   let selectedValues = [];
+  //   try {
+  //     const qOptions = currentQuestion?.q_options || [];
+  //     if (currentQuestion.answer_count > 1) {
+  //       selectedValues = (submittedAnswer || []).map(idx => qOptions[idx]?.qo_id).filter(Boolean);
+  //     } else {
+  //       const optId = qOptions[submittedAnswer]?.qo_id;
+  //       if (optId) selectedValues = [optId];
+  //     }
+
+  //     if (selectedValues.length === 0) {
+  //       console.warn('No valid option ID found');
+  //       return false;
+  //     }
+
+  //     // store locally
+  //     const savedAnswerValues = JSON.parse(localStorage.getItem('examAnswerValues') || '{}');
+  //     savedAnswerValues[questionId] = selectedValues;
+  //     localStorage.setItem('examAnswerValues', JSON.stringify(savedAnswerValues));
+  //   } catch (err) {
+  //     console.error('Failed to process answer:', err);
+  //     return false;
+  //   }
+
+  //   const timeTakenSeconds = Math.floor((Date.now() - questionStartTime) / 1000);
+  //   if (isNaN(timeTakenSeconds) || timeTakenSeconds < 0) {
+  //     console.warn('Invalid time taken, using 0');
+  //     return false;
+  //   }
+
+  //   const payload = {
+  //     examId: examId,
+  //     exam_question_id: questionId,
+  //     submitted_answer: selectedValues,
+  //     time_taken: timeTakenSeconds,
+  //   };
+
+  //   try {
+  //     const response = await axios({
+  //       url: `${baseUrl}/drlifeboat/student/exam/question/submit`,
+  //       method: 'POST',
+  //       headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
+  //       data: payload,
+  //     });
+
+  //     if (response.data?.result) {
+  //       const isCorrect = response.data.is_correct === true;
+
+  //       // let the engine pick next question id
+  //       const nextObj = adaptiveExam.submitAnswer(isCorrect); // { question_id, difficulty_level } or null
+
+  //       // persist engine state to localStorage
+  //       const savedStateKey = `adaptive_state_${examId}`;
+  //       localStorage.setItem(savedStateKey, JSON.stringify(adaptiveExam.serialize()));
+
+  //       if (nextObj) {
+  //         // load next question details
+  //         fetchQuestionDetails(nextObj.question_id);
+
+  //         // update navigation index if possible
+  //         const idx = questions.findIndex(q => q === nextObj.question_id);
+  //         if (idx !== -1) setCurrentIndex(idx);
+  //       } else {
+  //         // no more questions: trigger final submission modal
+  //         setShowModal(true);
+  //       }
+
+  //       return true;
+  //     } else {
+  //       return false;
+  //     }
+  //   } catch (err) {
+  //     console.error('Submit error:', err);
+  //     return false;
+  //   }
+  // };
 
   const submitQuestions = async (questionId) => {
-    const Bearer = sessionStorage.getItem('token');
-    const baseUrl = import.meta.env.VITE_BASE_URL || 'https://lunarsenterprises.com:6028';
     const submittedAnswer = responses[questionId];
-
     if (submittedAnswer === undefined) {
-      console.warn(`No answer selected for question ${questionId} `);
+      console.warn(`No answer selected for question ${questionId}`);
       return false;
+    }
+
+    // Prevent double submission
+    if (lockedQuestions.has(questionId)) {
+      console.log(`Question ${questionId} already submitted. Skipping.`);
+      return true; // Treat as success — already locked
     }
 
     let selectedValues = [];
     try {
-      const selectedQuestion = currentQuestion;
-      const qOptions = selectedQuestion?.q_options || [];
-
-      if (selectedQuestion.answer_count > 1) {
-        selectedValues = submittedAnswer.map((idx) => qOptions[idx]?.qo_id || 0).filter(id => id > 0);
+      const qOptions = currentQuestion?.q_options || [];
+      if (currentQuestion.answer_count > 1) {
+        selectedValues = (submittedAnswer || []).map(idx => qOptions[idx]?.qo_id).filter(Boolean);
       } else {
-        const optionId = qOptions[submittedAnswer]?.qo_id || 0;
-        if (optionId > 0) {
-          selectedValues = [optionId];
-        }
+        const optId = qOptions[submittedAnswer]?.qo_id;
+        if (optId) selectedValues = [optId];
       }
-
       if (selectedValues.length === 0) {
         console.warn('No valid option ID found');
         return false;
       }
 
-      const savedAnswerValues = JSON.parse(sessionStorage.getItem('examAnswerValues') || '{}');
+      const savedAnswerValues = JSON.parse(localStorage.getItem('examAnswerValues') || '{}');
       savedAnswerValues[questionId] = selectedValues;
-      sessionStorage.setItem('examAnswerValues', JSON.stringify(savedAnswerValues));
-
-      console.log(`Storing and submitting answer for Q${questionId}:`, selectedValues);
+      localStorage.setItem('examAnswerValues', JSON.stringify(savedAnswerValues));
     } catch (err) {
       console.error('Failed to process answer:', err);
       return false;
     }
 
     const timeTakenSeconds = Math.floor((Date.now() - questionStartTime) / 1000);
-    if (isNaN(timeTakenSeconds) || timeTakenSeconds < 0) {
-      console.warn('Invalid time taken, using 0');
-      return false;
-    }
 
     const payload = {
       examId: examId,
@@ -330,22 +410,66 @@ setTimerId(timer);
     try {
       const response = await axios({
         url: `${baseUrl}/drlifeboat/student/exam/question/submit`,
-        headers: {
-          Accept: 'application/json',
-          Authorization: `Bearer ${Bearer}`,
-        },
-        data: payload,
         method: 'POST',
+        headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
+        data: payload,
       });
-      if (response.data.result) {
-        console.log(`Question ${questionId} submitted at 12:18 PM IST, Tuesday, September 16, 2025`);
+
+      if (response.data?.result) {
+        const isCorrect = response.data.is_correct === true;
+
+        // Let engine decide next question
+        const nextObj = adaptiveExam.submitAnswer(isCorrect);
+
+        // Save engine state
+        localStorage.setItem(`adaptive_state_${examId}`, JSON.stringify(adaptiveExam.serialize()));
+
+        if (nextObj) {
+          fetchQuestionDetails(nextObj.question_id);
+          const idx = questions.findIndex(q => q === nextObj.question_id);
+          if (idx !== -1) setCurrentIndex(idx);
+        } else {
+          // Exam is complete
+          setShowModal(true);
+        }
         return true;
       } else {
-        console.error('Submit failed:', response.data.message);
+        // Handle known error: already submitted
+        if (response.data?.message?.includes("already submitted")) {
+          console.log("Answer already submitted (server confirmed). Treating as success.");
+          // Still lock it locally
+          setLockedQuestions(prev => new Set([...prev, questionId]));
+          // Optionally re-ask engine for next (in case sync issue)
+          const nextObj = adaptiveExam.getNextQuestion();
+          if (nextObj) {
+            fetchQuestionDetails(nextObj.question_id);
+            const idx = questions.findIndex(q => q === nextObj.question_id);
+            if (idx !== -1) setCurrentIndex(idx);
+          } else {
+            setShowModal(true);
+          }
+          return true;
+        }
+
+        Swal.fire('Error', response.data?.message || 'Failed to submit answer', 'error');
         return false;
       }
     } catch (err) {
       console.error('Submit error:', err);
+      if (err.response?.data?.message?.includes("already submitted")) {
+        console.log("Caught already submitted error. Recovering gracefully.");
+        setLockedQuestions(prev => new Set([...prev, questionId]));
+        const nextObj = adaptiveExam.getNextQuestion();
+        if (nextObj) {
+          fetchQuestionDetails(nextObj.question_id);
+          const idx = questions.findIndex(q => q === nextObj.question_id);
+          if (idx !== -1) setCurrentIndex(idx);
+        } else {
+          setShowModal(true);
+        }
+        return true;
+      }
+      Swal.fire('Error', 'Network error. Please check connection.', 'error');
       return false;
     }
   };
@@ -394,8 +518,10 @@ setTimerId(timer);
     return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // --- handle option selection (no change) ---
   const handleOptionSelect = (optionIndex) => {
-    const currentQId = questions[currentIndex];
+    const currentQId = currentQuestion?.id || questions[currentIndex];
+    if (!currentQId) return;
     if (lockedQuestions.has(currentQId)) return;
 
     if (currentQuestion.answer_count > 1) {
@@ -410,6 +536,47 @@ setTimerId(timer);
     }
   };
 
+  // --- goNext: save answer then mark locked and let engine load next (keeps your behaviour) ---
+  const goNext = async () => {
+    const currentQId = currentQuestion?.id || questions[currentIndex];
+    const hasAnswer = responses[currentQId] !== undefined;
+    const isLocked = lockedQuestions.has(currentQId);
+
+    // If not locked and has an answer => submit
+    if (!isLocked && hasAnswer) {
+      setLoading(true);
+      const success = await submitQuestions(currentQId);
+      setLoading(false);
+
+      if (!success) {
+        Swal.fire('Error', 'Failed to save answer. Try again.', 'error');
+        return;
+      }
+
+      // Mark answered (locked)
+      setLockedQuestions(prev => new Set([...prev, currentQId]));
+      setMarkedReview(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(currentQId);
+        return newSet;
+      });
+    } else if (!hasAnswer && !isLocked) {
+      // If no answer and there are no further questions (engine empty) -> force answer modal
+      const peek = adaptiveExam?.getNextQuestion(); // just to know if none left
+      if (!peek) {
+        Swal.fire('Answer Required', 'Please answer this question before submitting the exam.', 'warning');
+        return;
+      }
+    }
+
+    // If engine already advanced inside submitQuestions, the currentQuestion has been updated by submitQuestions
+    // Otherwise try to get next by peeking
+    if (currentQuestion == null || !adaptiveExam) return;
+
+    // Nothing else to do here: submitQuestions already fetched next question and updated state
+  };
+
+  // --- rest of your existing functions (submitExam, handleMarkForReview, navigation etc.) remain unchanged ---
   const handleMarkForReview = () => {
     const currentQId = questions[currentIndex];
 
@@ -419,68 +586,6 @@ setTimerId(timer);
       setCurrentIndex(currentIndex + 1);
       fetchQuestionDetails(questions[currentIndex + 1]);
     }
-  };
-
-  const goNext = async () => {
-    const currentQId = questions[currentIndex];
-    const isLastQuestion = currentIndex === questions.length - 1;
-    const hasAnswer = responses[currentQId] !== undefined;
-    const isLocked = lockedQuestions.has(currentQId);
-    let saveSuccess = true;
-
-    if (!isLocked && hasAnswer) {
-      const success = await submitQuestions(currentQId);
-      console.log('Submit question result for', currentQId, ':', success);
-
-      if (success) {
-        setLockedQuestions((prev) => new Set([...prev, currentQId]));
-        setMarkedReview((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(currentQId);
-          return newSet;
-        });
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Save Failed',
-          text: 'Failed to save your answer. Please try again.',
-        });
-        saveSuccess = false;
-        return;
-      }
-    } else if (!isLocked && !hasAnswer && isLastQuestion) {
-      // For last question, require an answer to proceed to submit
-      Swal.fire({
-        icon: 'warning',
-        title: 'Answer Required',
-        text: 'Please provide an answer for this question to submit the exam.',
-        confirmButtonText: 'OK'
-      });
-      return;
-    }
-
-    if (!isLastQuestion) {
-      const newIndex = currentIndex + 1;
-      setCurrentIndex(newIndex);
-      fetchQuestionDetails(questions[newIndex]);
-    } else if (saveSuccess && (isLocked || hasAnswer)) {
-      // For last question, only proceed to submit if saved/locked or just successfully saved
-      handleSubmit();
-    }
-  };
-
-  const getStatusClass = (qId) => (lockedQuestions.has(qId) ? 'green' : markedReview.has(qId) ? 'blue' : 'gray');
-
-  const goBack = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-      fetchQuestionDetails(questions[currentIndex - 1]);
-    }
-  };
-
-  const jumpTo = (index) => {
-    setCurrentIndex(index);
-    fetchQuestionDetails(questions[index]);
   };
 
   const handleSubmit = () => {
@@ -505,39 +610,86 @@ setTimerId(timer);
     }
   };
 
+  // const confirmSubmit = async () => {
+  //   setShowModal(false);
+  //   try {
+  //     const result = await submitExam(false);
+  //     if (result.success) {
+  //       localStorage.removeItem('examEndTime');
+  //       // clear adaptive localstorage keys too:
+  //       localStorage.removeItem(`adaptive_list_${examId}`);
+  //       localStorage.removeItem(`adaptive_state_${examId}`);
+  //       clearExamData();
+  //       Swal.fire({ icon: 'success', title: 'Exam submitted!', text: 'Redirecting...' }).then(() => {
+  //         navigate(`/exam/result/${result.seId}`, { state: { submittedExamId: result.seId } });
+  //       });
+  //     } else {
+  //       Swal.fire({ icon: 'error', title: 'Submission Failed', text: 'Please resolve issues and try again' });
+  //     }
+  //   } catch (err) {
+  //     Swal.fire({ icon: 'error', title: 'Error', text: err.message });
+  //   }
+  // };
+
   const confirmSubmit = async () => {
     setShowModal(false);
+    setLoading(true);
     try {
       const result = await submitExam(false);
-      console.log('Final exam submission result:', result);
 
       if (result.success) {
-        sessionStorage.removeItem('examEndTime');
+        // Mark this exam as completed locally (optional fallback)
+        const completedExams = JSON.parse(localStorage.getItem('completedExams') || '[]');
+        if (!completedExams.includes(examId)) {
+          completedExams.push(examId);
+          localStorage.setItem('completedExams', JSON.stringify(completedExams));
+        }
+
+        // Clear ALL adaptive + exam state
+        localStorage.removeItem(`adaptive_list_${examId}`);
+        localStorage.removeItem(`adaptive_state_${examId}`);
+        localStorage.removeItem(`examStartTime_${examId}`);
         clearExamData();
+
         Swal.fire({
           icon: 'success',
-          title: 'Exam submitted!',
-          text: 'Redirecting to analysis...',
-          confirmButtonText: 'OK',
+          title: 'Exam Submitted Successfully!',
+          text: 'Taking you to results...',
+          timer: 2000,
+          showConfirmButton: false
         }).then(() => {
           navigate(`/exam/result/${result.seId}`, { state: { submittedExamId: result.seId } });
         });
-        console.log('Navigating to results page for submission ID:', result.seId);
-
       } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Submission Failed',
-          text: 'Please resolve issues and try again',
-        });
+        throw new Error("Submission failed");
       }
     } catch (err) {
-      Swal.fire({ icon: 'error', title: 'Error', text: err.message });
+      console.error("Final submission error:", err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Submission Failed',
+        text: 'Your answers may be saved, but final submission failed. Please contact support.',
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const cancelSubmit = () => setShowModal(false);
 
+  const clearExamData = () => {
+    localStorage.removeItem('examResponses');
+    localStorage.removeItem('lockedQuestions');
+    localStorage.removeItem('markedReview');
+    localStorage.removeItem('examEndTime');
+    localStorage.removeItem(`examStartTime_${examId}`);
+    localStorage.removeItem('currentExamId');
+    localStorage.removeItem('examAnswerValues');
+    localStorage.removeItem('currentExam');
+    localStorage.removeItem(`adaptive_list_${examId}`);
+    localStorage.removeItem(`adaptive_state_${examId}`);
+  };
+
+  // rest of rendering logic remains mostly same (I preserved your UI, timer, palette etc.)
   const totalQuestions = questions.length;
   const answeredCount = lockedQuestions.size;
   const reviewCount = markedReview.size;
@@ -547,7 +699,6 @@ setTimerId(timer);
   const questionImages = currentQuestion?.questionImages || [];
   const isMultipleChoice = currentQuestion?.answer_count > 1;
   const saveNextButtonText = currentIndex === questions.length - 1 ? 'SAVE & SUBMIT' : 'SAVE & NEXT';
-  const baseUrl = import.meta.env.VITE_BASE_URL || 'https://lunarsenterprises.com:6028';
 
   if (loading) {
     return (
@@ -572,7 +723,7 @@ setTimerId(timer);
     return (
       <div className="exam-container" style={{ textAlign: 'center', padding: '50px', color: '#dc3545' }}>
         <p>{fetchError}</p>
-        <button onClick={fetchQuestionsList} style={{ padding: '8px 16px', background: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginTop: '10px' }}>Retry</button>
+        <button onClick={() => loadAdaptiveState()} style={{ padding: '8px 16px', background: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginTop: '10px' }}>Retry</button>
         <button onClick={() => navigate('/exam')} style={{ padding: '8px 16px', background: '#6c757d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginTop: '10px', marginLeft: '10px' }}>Back</button>
       </div>
     );
@@ -582,10 +733,13 @@ setTimerId(timer);
     return (
       <div className="exam-container" style={{ textAlign: 'center', padding: '50px', color: '#6c757d' }}>
         <p>No questions available.</p>
-        <button onClick={() => navigate('/exam')}>Back to Exams</button>
+        <button style={{border:"20px", color:"blue", textAlign: 'center' }} onClick={() => navigate('/exam')}>Back to Exams</button>
       </div>
     );
   }
+
+
+
 
   return (
     <>
@@ -606,6 +760,7 @@ setTimerId(timer);
                   />
                 ))}
               </div>
+
               {questionImages.length > 0 && (
                 <div className="image-panel">
                   <div className="image-watermark-inside">www.drlifeboat.com</div>
@@ -614,14 +769,10 @@ setTimerId(timer);
                   ))}
                 </div>
               )}
-              {!questionImages.length > 0 && (
-                <div className="image-panel">
-                  <div className="image-watermark">www.drlifeboat.com</div>
-                </div>
-              )}
-              <div className="options">
+
+              {/* <div className="options">
                 {currentQuestion.q_options?.map((opt, idx) => {
-                  const currentQId = questions[currentIndex];
+                  const currentQId = currentQuestion.id;
                   const selected = responses[currentQId];
                   const isChecked =
                     isMultipleChoice
@@ -643,8 +794,58 @@ setTimerId(timer);
                     </label>
                   );
                 })}
+              </div> */}
+              {/* new */}
+
+              <div className="options">
+                {currentQuestion.q_options?.map((opt, idx) => {
+                  const currentQId = currentQuestion.id;
+                  const selected = responses[currentQId];
+                  const isChecked = isMultipleChoice
+                    ? Array.isArray(selected) && selected.includes(idx)
+                    : selected === idx;
+
+                  const hasOptionImage = opt.qo_image && opt.qo_image.trim() !== '';
+
+                  return (
+                    <label
+                      key={opt.qo_id || idx}
+                      className={`option ${hasOptionImage ? 'has-image' : ''} ${isChecked ? 'selected' : ''}`}
+                    >
+                      <input
+                        type={isMultipleChoice ? 'checkbox' : 'radio'}
+                        name={`answer-${currentIndex}`}
+                        checked={!!isChecked}
+                        onChange={() => handleOptionSelect(idx)}
+                        disabled={lockedQuestions.has(currentQId)}
+                      />
+                      <div className="option-content">
+                        <span className="option-letter">
+                          {String.fromCharCode(65 + idx)})
+                        </span>
+                        <div className="option-body">
+                          <span
+                            className="option-text"
+                            dangerouslySetInnerHTML={{ __html: opt.qo_option }}
+                          />
+                          {hasOptionImage && (
+                            <div className="option-image-container">
+                              <img
+                                src={`${baseUrl}${opt.qo_image}`}
+                                alt={`Option ${String.fromCharCode(65 + idx)}`}
+                                className="option-image"
+                                onError={(e) => { e.target.style.display = 'none'; }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </label>
+                  );
+                })}
               </div>
             </div>
+
             <div className="fixed-action-buttons">
               <button className="mark-review" onClick={handleMarkForReview} disabled={lockedQuestions.has(questions[currentIndex])}>
                 MARK FOR REVIEW & NEXT
@@ -653,19 +854,9 @@ setTimerId(timer);
                 {saveNextButtonText}
               </button>
             </div>
-            {/* <div className="navigation">
-              <button className="nav-btn" onClick={goBack} disabled={currentIndex === 0}>
-                <FaChevronLeft /> BACK
-              </button>
-              <button
-                className="nav-btn"
-                onClick={goNext}
-                disabled={currentIndex === questions.length - 1}
-              >
-                NEXT <FaChevronRight />
-              </button>
-            </div> */}
+
           </div>
+
           <div className="image-panel-divider" />
           <div className="status-panel">
             <div className="legend">
@@ -674,36 +865,47 @@ setTimerId(timer);
               <p className="legend-para"><span className="box green" /> Answered <span>{answeredCount}</span></p>
               <p className="legend-para"><span className="box blue" /> Mark for review <span>{reviewCount}</span></p>
             </div>
+
             <div className="scrollable-grid">
               <div className="number-grid">
                 {questions.map((qId, i) => (
                   <div
                     key={qId}
-                    className={`number-box ${getStatusClass(qId)} ${currentIndex === i ? 'active' : ''}`}
-                    onClick={() => jumpTo(i)}
+                    className={`number-box ${getStatusClass(qId)} ${currentQuestion?.id === qId ? 'active' : ''}`}
+                    onClick={() => {
+                      const q = allQuestionsData.find(q => q.question_id === qId);
+                      if (q) {
+                        fetchQuestionDetails(qId);
+                        setCurrentIndex(i);
+                      }
+                    }}
                   >
                     {String(i + 1).padStart(2, '0')}
                   </div>
                 ))}
               </div>
             </div>
+
             <button className="submit-btn" onClick={handleSubmit}>
               SUBMIT EXAM
             </button>
           </div>
         </div>
       </div>
+
       {showModal && (
         <div className="left-confirmation">
           <h3>Confirm Submission</h3>
           <p>Are you sure? <b>No changes after submission.</b></p>
           <div className="modal-actions">
-            <button className="cancel-btn" onClick={cancelSubmit}>Cancel</button>
+            <button className="cancel-btn" onClick={() => setShowModal(false)}>Cancel</button>
             <button className="confirm-btn" onClick={confirmSubmit}>Yes, Submit</button>
           </div>
         </div>
       )}
     </>
+
+
   );
 };
 
