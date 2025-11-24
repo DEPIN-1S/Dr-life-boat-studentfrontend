@@ -18,6 +18,16 @@ const Results = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [activeTab, setActiveTab] = useState('analysis');
+  const [visibleStart, setVisibleStart] = useState(0);
+  const windowSize = 20;
+
+  // SAFE fallback prevents crash:
+  const safeExamDetails = examDetails || [];
+  const visibleQuestions = isMobile
+    ? safeExamDetails
+    : safeExamDetails.slice(visibleStart, visibleStart + windowSize);
+
+
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -35,6 +45,10 @@ const Results = () => {
       }).then(() => navigate('/exam'));
       return;
     }
+
+
+
+
 
     const cachedResults = sessionStorage.getItem(`examResults_${submittedExamId}`);
     if (cachedResults) {
@@ -87,6 +101,20 @@ const Results = () => {
 
     return q;
   };
+
+  const goPrevWindow = () => {
+    if (isMobile) return; // disable for mobile
+    setVisibleStart(prev => Math.max(prev - windowSize, 0));
+  };
+
+  const goNextWindow = () => {
+    if (isMobile) return; // disable for mobile
+    setVisibleStart(prev => {
+      if (prev + windowSize >= safeExamDetails.length) return prev;
+      return prev + windowSize;
+    });
+  };
+
 
   const fetchExamDetails = async () => {
     const Bearer = sessionStorage.getItem('token');
@@ -454,7 +482,7 @@ const Results = () => {
                 </div>
                 <div style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: '24px', fontWeight: 'bold', color: scoreColor }}>
-                    {userScore}/{totalScore} ({percentScore}%)
+                    {userScore}/{totalScore} ({percentScore})
                   </div>
                   <div style={{ fontSize: '12px', color: '#6c757d' }}>Score</div>
                 </div>
@@ -463,12 +491,12 @@ const Results = () => {
             <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', marginBottom: '20px', border: '1px solid #dee2e6' }}>
               <h3 style={{ margin: '0 0 20px', color: '#495057' }}>Performance Overview</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '20px', marginBottom: '20px' }}>
-                <div style={{ textAlign: 'center' }}><div style={{ fontSize: '24px', fontWeight: 'bold', color: scoreColor }}>{userScore}%</div><div style={{ fontSize: '12px', color: '#6c757d' }}>Score</div></div>
+                <div style={{ textAlign: 'center' }}><div style={{ fontSize: '24px', fontWeight: 'bold', color: scoreColor }}>{userScore}</div><div style={{ fontSize: '12px', color: '#6c757d' }}>Score</div></div>
                 <div style={{ textAlign: 'center' }}><div style={{ fontSize: '24px', fontWeight: 'bold', color: '#007bff' }}>{attemptedQuestions}/{examDetails.length}</div><div style={{ fontSize: '12px', color: '#6c757d' }}>Attempted Questions</div></div>
                 {/* <div style={{ textAlign: 'center' }}><div style={{ fontSize: '24px', fontWeight: 'bold', color: '#28a745' }}>{percentile}%</div><div style={{ fontSize: '12px', color: '#6c757d' }}>Percentile</div></div> */}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '20px', marginBottom: '20px' }}>
-                <div style={{ textAlign: 'center' }}><div style={{ fontSize: '18px', fontWeight: 'bold', color: '#dc3545' }}>{accuracy}%</div><div style={{ fontSize: '12px', color: '#6c757d' }}>Accuracy</div></div>
+                <div style={{ textAlign: 'center' }}><div style={{ fontSize: '18px', fontWeight: 'bold', color: '#dc3545' }}>{accuracy}</div><div style={{ fontSize: '12px', color: '#6c757d' }}>Accuracy</div></div>
                 <div style={{ textAlign: 'center' }}><div style={{ fontSize: '18px', fontWeight: 'bold', color: '#6c757d' }}>{timeTakenStr}</div><div style={{ fontSize: '12px', color: '#6c757d' }}>Time Taken</div></div>
                 {/* <div style={{ textAlign: 'center' }}><div style={{ fontSize: '18px', fontWeight: 'bold', color: '#6c757d' }}>N/A</div><div style={{ fontSize: '12px', color: '#6c757d' }}>Overall Rank</div></div> */}
               </div>
@@ -529,7 +557,7 @@ const Results = () => {
 
         {activeTab === 'detailed' && (
           <div>
-            <div style={{ marginBottom: '30px', position: 'relative' }}>
+            {/* <div style={{ marginBottom: '30px', position: 'relative' }}>
               <div style={{ display: 'flex', overflowX: 'auto', gap: '8px', padding: '10px 0', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                 {examDetails.map((_, index) => {
                   const isCurrent = currentQuestion === index;
@@ -561,8 +589,101 @@ const Results = () => {
                   );
                 })}
               </div>
-            </div>
+            </div> */}
 
+            <div
+              style={{
+                marginBottom: '30px',
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+              }}
+            >
+
+              {/* LEFT ARROW (DESKTOP ONLY) */}
+              {!isMobile && (
+                <button
+                  onClick={goPrevWindow}
+                  disabled={visibleStart === 0}
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid #007bff',
+                    background: visibleStart === 0 ? '#e9ecef' : '#007bff',
+                    color: visibleStart === 0 ? '#6c757d' : 'white',
+                    cursor: visibleStart === 0 ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  <FaChevronLeft />
+                </button>
+              )}
+
+              {/* QUESTION BUBBLES */}
+              <div
+                style={{
+                  display: 'flex',
+                  overflowX: 'auto',
+                  gap: '8px',
+                  padding: '10px 0',
+                  flex: 1,
+                  scrollbarWidth: 'none',
+                  msOverflowStyle: 'none',
+                }}
+              >
+                {visibleQuestions.map((_, idx) => {
+                  const actualIndex = isMobile ? idx : visibleStart + idx;
+                  const q = safeExamDetails[actualIndex];
+
+                  const isCurrent = currentQuestion === actualIndex;
+                  const isCorrect = q?.ea_correct === 1;
+                  const hasAnswer = q?.ea_answer?.length > 0;
+
+                  const statusColor = isCorrect ? '#28a745' : hasAnswer ? '#dc3545' : '#6c757d';
+
+                  return (
+                    <button
+                      key={actualIndex}
+                      onClick={() => goToQuestion(actualIndex)}
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        border: isCurrent ? '3px solid #007bff' : `2px solid ${statusColor}`,
+                        borderRadius: '50%',
+                        background: 'white',
+                        color: statusColor,
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                        flexShrink: 0,
+                        transition: 'all 0.3s ease',
+                      }}
+                    >
+                      {actualIndex + 1}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* RIGHT ARROW (DESKTOP ONLY) */}
+              {!isMobile && (
+                <button
+                  onClick={goNextWindow}
+                  disabled={visibleStart + windowSize >= safeExamDetails.length}
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid #007bff',
+                    background: (visibleStart + windowSize >= safeExamDetails.length) ? '#e9ecef' : '#007bff',
+                    color: (visibleStart + windowSize >= safeExamDetails.length) ? '#6c757d' : 'white',
+                    cursor: (visibleStart + windowSize >= safeExamDetails.length) ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  <FaChevronRight />
+                </button>
+              )}
+
+            </div>
             <div style={{ backgroundColor: 'white', borderRadius: '16px', padding: isMobile ? '20px' : '30px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', marginBottom: '20px', border: '1px solid #e9ecef' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '25px', paddingBottom: '15px', borderBottom: '1px solid #f1f3f4' }}>
                 <div style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', padding: '8px 16px', borderRadius: '20px', fontSize: '12px', fontWeight: '600', letterSpacing: '0.5px' }}>QUESTION {currentQuestion + 1} OF {examDetails.length}</div>

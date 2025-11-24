@@ -1,5 +1,4 @@
 
-// Dashboard.jsx
 import React, { useEffect, useState } from 'react'
 import { Card, Row, Col, Container } from 'react-bootstrap'
 import { FaBookOpen, FaGraduationCap, FaTrophy } from 'react-icons/fa'
@@ -68,17 +67,17 @@ const Dashboard = () => {
       count: courses.length,
       path: '/enrolled-courses',
     },
-    {
-      icon: <FaGraduationCap size={40} className="icon-bg" />,
-      label: 'Active Courses',
-      count: course.length,
-      path: '/courses',
-    },
+    // {
+    //   icon: <FaGraduationCap size={40} className="icon-bg" />,
+    //   label: 'Active Courses',
+    //   count: course.length,
+    //   path: '/courses',
+    // },
     {
       icon: <FaTrophy size={40} className="icon-bg" />,
       label: 'Completed Courses',
       count: 0,
-      path: '/',
+      path: '/enrolled-courses',
     },
   ]
 

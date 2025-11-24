@@ -243,3 +243,17 @@
     opacity: 1;
   }
 }
+
+
+.lesson-image-placeholder {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  background: #f0f0f0;
+  border: 2px dashed #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  color: #999;
+}
