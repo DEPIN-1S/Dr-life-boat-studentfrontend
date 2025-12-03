@@ -150,7 +150,7 @@ const ExamQuestion = () => {
 
         // If there's a currentQuestionId in saved state -> fetch its details
         if (savedState.currentQuestionId) {
-          fetchQuestionDetails(savedState.currentQuestionId);
+         await fetchQuestionDetails(savedState.currentQuestionId);
           // set currentIndex to where this id appears in original flatIds if found
           const idx = flatIds.findIndex(id => id === savedState.currentQuestionId);
           if (idx !== -1) setCurrentIndex(idx);
@@ -193,7 +193,7 @@ const ExamQuestion = () => {
 
   const getStatusClass = (qId) => (lockedQuestions.has(qId) ? 'green' : markedReview.has(qId) ? 'blue' : 'gray');
 
-  // --- fetch question details (existing endpoint) ---
+
   // const fetchQuestionDetails = async (questionId) => {
   //   try {
   //     const res = await axios({
@@ -204,164 +204,142 @@ const ExamQuestion = () => {
   //     });
 
   //     if (res.data?.result) {
-  //       const q = res.data.data;
-  //       // normalize q_question into array
+  //       let q = res.data.data;
+
+  //       // Normalize q_question
   //       if (!Array.isArray(q.q_question)) {
-  //         q.q_question = (typeof q.q_question === 'string') ? [q.q_question] : [];
+  //         q.q_question = typeof q.q_question === 'string' ? [q.q_question] : [];
   //       }
-  //       q.questionImages = q.question_images ? q.question_images.split(',').map(s => s.trim()).filter(Boolean) : [];
-  //       // set with a unique id field
+
+  //       // CRITICAL FIX: Support both old and new image fields
+  //       let imagePaths = [];
+
+  //       // Method 1: Old way (string)
+  //       if (q.question_images) {
+  //         imagePaths = q.question_images
+  //           .split(',')
+  //           .map(s => s.trim())
+  //           .filter(Boolean);
+  //       }
+
+  //       // Method 2: New way (array of objects) → PRIORITY
+  //       if (Array.isArray(q.q_question_image) && q.q_question_image.length > 0) {
+  //         imagePaths = q.q_question_image
+  //           .map(img => img.qi_file)
+  //           .filter(Boolean);
+  //       }
+
+  //       // Optional: fallback to explanation/ruleout images if needed (rare)
+  //       // if (imagePaths.length === 0 && q.q_explanation_image?.length) { ... }
+
   //       const qid = q.id || q.eq_id || q.exam_question_id || questionId;
-  //       setCurrentQuestion({ ...q, id: qid });
-  //       // scroll & reset timer for question time
+
+  //       setCurrentQuestion({
+  //         ...q,
+  //         id: qid,
+  //         questionImages: imagePaths, // This will now work perfectly
+  //       });
+
   //       window.scrollTo({ top: 0, behavior: 'smooth' });
   //       setQuestionStartTime(Date.now());
-  //     } else {
-  //       console.warn('fetchQuestionDetails message:', res.data?.message);
   //     }
   //   } catch (err) {
-  //     console.error('Error fetching question details:', err);
+  //     console.error('Error fetching question:', err);
+  //     Swal.fire('Error', 'Failed to load question.', 'error');
   //   }
   // };
-  const fetchQuestionDetails = async (questionId) => {
-    try {
-      const res = await axios({
-        url: `${baseUrl}/drlifeboat/student/exam/question`,
-        method: 'POST',
-        headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
-        data: { examId, exam_question_id: questionId },
+const fetchQuestionDetails = async (questionId) => {
+  if (!questionId) return;
+
+  try {
+    const res = await axios({
+      url: `${baseUrl}/drlifeboat/student/exam/question`,
+      method: 'POST',
+      headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
+      data: { examId, exam_question_id: questionId },
+    });
+
+    // SUCCESS: Fresh question
+    if (res.data?.result && res.data.data) {
+      const q = res.data.data;
+
+      // Normalize question text
+      if (!Array.isArray(q.q_question)) {
+        q.q_question = typeof q.q_question === 'string' ? [q.q_question] : [];
+      }
+
+      // Handle images (both old and new formats)
+      let imagePaths = [];
+      if (q.question_images) {
+        imagePaths = q.question_images.split(',').map(s => s.trim()).filter(Boolean);
+      }
+      if (Array.isArray(q.q_question_image) && q.q_question_image.length > 0) {
+        imagePaths = q.q_question_image.map(img => img.qi_file).filter(Boolean);
+      }
+
+      const qid = q.id || q.eq_id || q.exam_question_id || questionId;
+
+      setCurrentQuestion({
+        ...q,
+        id: qid,
+        questionImages: imagePaths,
       });
 
-      if (res.data?.result) {
-        let q = res.data.data;
-
-        // Normalize q_question
-        if (!Array.isArray(q.q_question)) {
-          q.q_question = typeof q.q_question === 'string' ? [q.q_question] : [];
-        }
-
-        // CRITICAL FIX: Support both old and new image fields
-        let imagePaths = [];
-
-        // Method 1: Old way (string)
-        if (q.question_images) {
-          imagePaths = q.question_images
-            .split(',')
-            .map(s => s.trim())
-            .filter(Boolean);
-        }
-
-        // Method 2: New way (array of objects) → PRIORITY
-        if (Array.isArray(q.q_question_image) && q.q_question_image.length > 0) {
-          imagePaths = q.q_question_image
-            .map(img => img.qi_file)
-            .filter(Boolean);
-        }
-
-        // Optional: fallback to explanation/ruleout images if needed (rare)
-        // if (imagePaths.length === 0 && q.q_explanation_image?.length) { ... }
-
-        const qid = q.id || q.eq_id || q.exam_question_id || questionId;
-
-        setCurrentQuestion({
-          ...q,
-          id: qid,
-          questionImages: imagePaths, // This will now work perfectly
-        });
-
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        setQuestionStartTime(Date.now());
-      }
-    } catch (err) {
-      console.error('Error fetching question:', err);
-      Swal.fire('Error', 'Failed to load question.', 'error');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setQuestionStartTime(Date.now());
+      return true;
     }
-  };
-  // --- submit a single question (uses your existing submit endpoint) ---
-  // const submitQuestions = async (questionId) => {
-  //   const submittedAnswer = responses[questionId];
-  //   if (submittedAnswer === undefined) {
-  //     console.warn(`No answer selected for question ${questionId}`);
-  //     return false;
-  //   }
 
-  //   // map index-based selection to option IDs
-  //   let selectedValues = [];
-  //   try {
-  //     const qOptions = currentQuestion?.q_options || [];
-  //     if (currentQuestion.answer_count > 1) {
-  //       selectedValues = (submittedAnswer || []).map(idx => qOptions[idx]?.qo_id).filter(Boolean);
-  //     } else {
-  //       const optId = qOptions[submittedAnswer]?.qo_id;
-  //       if (optId) selectedValues = [optId];
-  //     }
+    // ALREADY ANSWERED → Skip this question, get next one
+    if (res.data?.message?.includes("already submitted") ||
+        res.data?.message?.toLowerCase().includes("already")) {
 
-  //     if (selectedValues.length === 0) {
-  //       console.warn('No valid option ID found');
-  //       return false;
-  //     }
+      console.log(`Question ${questionId} already answered. Skipping to next...`);
 
-  //     // store locally
-  //     const savedAnswerValues = JSON.parse(localStorage.getItem('examAnswerValues') || '{}');
-  //     savedAnswerValues[questionId] = selectedValues;
-  //     localStorage.setItem('examAnswerValues', JSON.stringify(savedAnswerValues));
-  //   } catch (err) {
-  //     console.error('Failed to process answer:', err);
-  //     return false;
-  //   }
+      // Mark as answered locally
+      setLockedQuestions(prev => new Set([...prev, questionId]));
 
-  //   const timeTakenSeconds = Math.floor((Date.now() - questionStartTime) / 1000);
-  //   if (isNaN(timeTakenSeconds) || timeTakenSeconds < 0) {
-  //     console.warn('Invalid time taken, using 0');
-  //     return false;
-  //   }
+      // Ask adaptive engine for next question
+      const nextObj = adaptiveExam.getNextQuestion() || adaptiveExam.submitAnswer(null);
 
-  //   const payload = {
-  //     examId: examId,
-  //     exam_question_id: questionId,
-  //     submitted_answer: selectedValues,
-  //     time_taken: timeTakenSeconds,
-  //   };
+      if (nextObj?.question_id) {
+        // Save updated engine state
+        localStorage.setItem(`adaptive_state_${examId}`, JSON.stringify(adaptiveExam.serialize()));
 
-  //   try {
-  //     const response = await axios({
-  //       url: `${baseUrl}/drlifeboat/student/exam/question/submit`,
-  //       method: 'POST',
-  //       headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
-  //       data: payload,
-  //     });
+        // Load next question
+        fetchQuestionDetails(nextObj.question_id);
+        const idx = questions.findIndex(q => q === nextObj.question_id);
+        if (idx !== -1) setCurrentIndex(idx);
+      } else {
+        // No more questions → exam complete
+        console.log("All questions answered or no more available.");
+        setShowModal(true); // Trigger final submit
+      }
+      return false;
+    }
 
-  //     if (response.data?.result) {
-  //       const isCorrect = response.data.is_correct === true;
+    // Any other error
+    console.warn("Unknown response:", res.data);
+    Swal.fire('Error', res.data?.message || 'Failed to load question', 'error');
 
-  //       // let the engine pick next question id
-  //       const nextObj = adaptiveExam.submitAnswer(isCorrect); // { question_id, difficulty_level } or null
+  } catch (err) {
+    console.error('fetchQuestionDetails error:', err);
 
-  //       // persist engine state to localStorage
-  //       const savedStateKey = `adaptive_state_${examId}`;
-  //       localStorage.setItem(savedStateKey, JSON.stringify(adaptiveExam.serialize()));
-
-  //       if (nextObj) {
-  //         // load next question details
-  //         fetchQuestionDetails(nextObj.question_id);
-
-  //         // update navigation index if possible
-  //         const idx = questions.findIndex(q => q === nextObj.question_id);
-  //         if (idx !== -1) setCurrentIndex(idx);
-  //       } else {
-  //         // no more questions: trigger final submission modal
-  //         setShowModal(true);
-  //       }
-
-  //       return true;
-  //     } else {
-  //       return false;
-  //     }
-  //   } catch (err) {
-  //     console.error('Submit error:', err);
-  //     return false;
-  //   }
-  // };
+    // Network or unexpected error → try next question as fallback?
+    if (err.response?.data?.message?.includes("already submitted")) {
+      // Same handling as above
+      setLockedQuestions(prev => new Set([...prev, questionId]));
+      const nextObj = adaptiveExam.getNextQuestion();
+      if (nextObj) {
+        fetchQuestionDetails(nextObj.question_id);
+      } else {
+        setShowModal(true);
+      }
+    } else {
+      Swal.fire('Error', 'Failed to load question. Please try again.', 'error');
+    }
+  }
+};
 
   const submitQuestions = async (questionId) => {
     const submittedAnswer = responses[questionId];
