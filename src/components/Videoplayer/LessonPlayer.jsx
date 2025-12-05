@@ -1,7 +1,5 @@
-
-
-
-import React, { useState } from 'react'
+// src/components/Videoplayer/LessonPlayer.jsx
+import React, { useState, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import VideoPlayer from '../VideoPlayer'
 
@@ -9,272 +7,300 @@ const LessonPlayer = () => {
   const { state } = useLocation()
   const navigate = useNavigate()
 
-  const [selectedFile, setSelectedFile] = useState(state)
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+  const allFiles = state?.allFiles || []
+  const courseDetails = state?.courseDetails || {}
+  const courseModules = courseDetails.modules || []
 
-  const lessons = state?.allFiles || []
+  const [selectedFile, setSelectedFile] = useState(state?.selected || allFiles[0])
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
+  const [loading, setLoading] = useState(true)
 
-  if (!selectedFile) {
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedModule, setSelectedModule] = useState('all')
+  const [selectedTopic, setSelectedTopic] = useState('all')
+  const [selectedType, setSelectedType] = useState('all')
+
+  if (!selectedFile || allFiles.length === 0) {
     return (
-      <div className="container-fluid vh-100 d-flex align-items-center justify-content-center">
-        <div className="text-center">
-          <h4 className="text-muted">No file selected</h4>
-        </div>
+      <div className="d-flex align-items-center justify-content-center vh-100 bg-light">
+        <h4 className="text-danger">No lessons available</h4>
       </div>
     )
   }
 
-  const toggleMobileSidebar = () => {
-    setIsMobileSidebarOpen(!isMobileSidebarOpen)
+  const getFileId = (link) => {
+    if (!link) return null
+    const m1 = link.match(/\/d\/([a-zA-Z0-9-_]+)/)
+    const m2 = link.match(/[?&]id=([a-zA-Z0-9-_]+)/)
+    return m1 ? m1[1] : m2 ? m2[1] : null
   }
 
-  const handleMobileFileSelect = (file) => {
-    setSelectedFile(file)
-    setIsMobileSidebarOpen(false) // Close sidebar after selection
-  }
+  const fileId = getFileId(selectedFile.file_link || selectedFile.url)
 
-  // Helper function to render the appropriate icon
-  const renderFileIcon = (file, sizeClass = 'fs-4') => {
-    const { type, url } = file
+  const topicOptions = useMemo(() => {
+    if (selectedModule === 'all') return []
+    const mod = courseModules.find(m => m.id == selectedModule)
+    if (!mod) return []
+    const list = []
+    mod.topics?.forEach(t => {
+      list.push({ id: t.id, name: t.name })
+      t.subtopics?.forEach(st => list.push({ id: st.id, name: '  ↳ ' + st.name }))
+    })
+    return list
+  }, [selectedModule, courseModules])
 
-    if (type === 'pdf') {
-      return <i className={`fas fa-file-pdf text-danger ${sizeClass}`}></i>
-    }
+  const filteredFiles = useMemo(() => {
+    return allFiles.filter(file => {
+      if (searchQuery && !file.name.toLowerCase().includes(searchQuery.toLowerCase())) return false
 
-    if (['mp4', 'mov', 'avi', 'mkv'].includes(type)) {
-      return <i className={`fas fa-play-circle text-success ${sizeClass}`}></i>
-    }
+      if (selectedType !== 'all') {
+        const isVideo = file.type?.toLowerCase().includes('video') || file.file_link?.includes('.mp4')
+        if (selectedType === 'pdf' && isVideo) return false
+        if (selectedType === 'video' && !isVideo) return false
+      }
 
-    if (type === 'ppt' || type === 'pptx') {
-      return <i className={`fas fa-file-powerpoint text-warning ${sizeClass}`}></i>
-    }
+      if (selectedModule !== 'all') {
+        let found = false
+        courseModules.forEach(mod => {
+          if (mod.id == selectedModule) {
+            if (mod.files?.some(f => f.id === file.id)) found = true
+            mod.topics?.forEach(t => {
+              if (t.files?.some(f => f.id === file.id)) found = true
+              t.subtopics?.forEach(st => {
+                if (st.files?.some(f => f.id === file.id)) found = true
+              })
+            })
+          }
+        })
+        if (!found) return false
+      }
 
-    // Fallback for Google Drive or other types
-    if (url?.includes('google')) {
-      return <i className={`fab fa-google-drive text-primary ${sizeClass}`}></i>
-    }
+      if (selectedTopic !== 'all') {
+        let found = false
+        courseModules.forEach(mod => {
+          mod.topics?.forEach(t => {
+            if (t.id == selectedTopic && t.files?.some(f => f.id === file.id)) found = true
+            t.subtopics?.forEach(st => {
+              if (st.id == selectedTopic && st.files?.some(f => f.id === file.id)) found = true
+            })
+          })
+        })
+        if (!found) return false
+      }
 
-    // Default fallback icon if none match
-    return <i className={`fas fa-file text-secondary ${sizeClass}`}></i>
-  }
+      return true
+    })
+  }, [allFiles, searchQuery, selectedModule, selectedTopic, selectedType, courseModules])
 
-  const renderFileViewer = () => {
-    const { url, type } = selectedFile
+  const renderViewer = () => {
+    const { name, type, file_link } = selectedFile
 
-    if (['mp4', 'mov', 'avi', 'mkv'].includes(type)) {
+    if ((type === 'pdf' || file_link?.includes('drive.google.com')) && fileId) {
       return (
-        <VideoPlayer
-          src={url}
-          title={selectedFile.name}
-          className="w-100 rounded"
-          style={{ height: '500px' }}
-        />
-      )
-    }
-
-    if (type === 'pdf') {
-      return (
-        <div className="w-100 h-100 d-flex flex-column bg-white rounded shadow-sm">
-          <div className="p-2 bg-light border-bottom d-flex justify-content-between align-items-center">
-            <span className="fw-medium text-dark">
-              <i className="fas fa-file-pdf text-danger me-2"></i>
-              PDF Viewer
-            </span>
+        <div className="d-flex flex-column h-100 bg-white rounded shadow-sm overflow-hidden">
+          <div className="p-3 bg-light border-bottom d-flex justify-content-between align-items-center">
+            <h6 className="mb-0 fw-bold text-truncate">{name}</h6>
+            <a
+              href={`https://drive.google.com/uc?export=download&id=${fileId}`}
+              className="btn btn-success btn-sm"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Download
+            </a>
           </div>
+
+          {loading && (
+            <div className="position-absolute top-50 start-50 translate-middle z-10">
+              <div className="spinner-border text-primary" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+            </div>
+          )}
+
           <iframe
-            src={url}
-            title="PDF Viewer"
-            className="flex-grow-1 border-0"
-            sandbox="allow-same-origin allow-scripts"
+            src={`https://drive.google.com/file/d/${fileId}/preview`}
+            title={name}
+            className="border-0 w-100 flex-grow-1"
+            onLoad={() => setLoading(false)}
+            style={{ minHeight: '60vh' }}
+            sandbox="allow-scripts allow-same-origin allow-popups"
           />
         </div>
       )
     }
 
-    if (type === 'ppt' || type === 'pptx') {
-      return (
-        <iframe
-          src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`}
-          title="PPT Viewer"
-          className="w-100 rounded border-0"
-          style={{ height: '700px' }}
-          sandbox="allow-same-origin allow-scripts"
-        />
-      )
-    }
+    const videoUrl = fileId
+      ? `https://drive.google.com/uc?export=download&id=${fileId}`
+      : file_link
 
-    if (url.includes('google')) {
-      return (
-        <div className="position-relative">
-          <iframe
-            src={url}
-            className="w-100 rounded border-0"
-            style={{ height: '700px' }}
-            allow="autoplay"
-            title="Drive Content"
-            allowFullScreen={true}
-            sandbox="allow-same-origin allow-scripts"
-          />
-        </div>
-      )
-    }
-
-    return (
-      <div className="text-center p-5">
-        <h5 className="text-muted">Unsupported file type</h5>
-      </div>
-    )
+    return <VideoPlayer src={videoUrl} title={name} />
   }
 
   return (
-    <div className="container-fluid vh-100 p-0">
-      <div className="row g-0 h-100">
-        {/* Main Content Area */}
-        <div className="col-lg-9 col-12 bg-light">
-          <div className="h-100 d-flex flex-column">
-            {/* Header */}
-            <div className="bg-white border-bottom px-3 px-md-4 py-3">
-              <div className="d-flex align-items-center justify-content-between">
-                <div className="d-flex align-items-center">
-                  <button
-                    onClick={() => navigate(-1)}
-                    className="btn btn-link text-dark p-0 me-2 me-md-3 text-decoration-none"
-                  >
-                    <i className="fas fa-arrow-left me-1 me-md-2"></i>
-                    <span className="d-none d-sm-inline">Back</span>
-                  </button>
-                  <h4 className="mb-0 fs-6 fs-md-4 text-truncate">{selectedFile.name}</h4>
-                </div>
-                <div className="d-flex align-items-center">
-                  <button
-                    className="btn btn-outline-secondary btn-sm d-lg-none me-2"
-                    onClick={toggleMobileSidebar}
-                  >
-                    <i className={`fas ${isMobileSidebarOpen ? 'fa-times' : 'fa-list'}`}></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Content Viewer */}
-            <div className="flex-grow-1 p-2 p-md-4 overflow-auto">
-              <div className="h-100">
-                {renderFileViewer()}
-              </div>
-            </div>
-          </div>
+    <>
+      {/* Top Bar */}
+      <div className="bg-white border-bottom px-3 py-2 d-flex align-items-center justify-content-between shadow-sm" style={{ height: '60px' }}>
+        <div className="d-flex align-items-center">
+          <button onClick={() => navigate(-1)} className="btn btn-link text-dark p-0 me-3">
+            ← Back
+          </button>
+          <h6 className="mb-0 text-truncate" style={{ maxWidth: '200px' }}>
+            {selectedFile.name}
+          </h6>
         </div>
 
-        {/* Right Sidebar - Desktop (Fixed and Scrollable) */}
-        <div className="col-lg-3 d-none d-lg-block bg-white border-start position-fixed end-0" style={{ width: '22%', height: '100vh', zIndex: 1000 }}>
-          <div className="h-100 d-flex flex-column">
-            {/* Fixed Header */}
-            <div className="p-3 border-bottom bg-light flex-shrink-0">
-              <h5 className="mb-0 fw-bold text-primary">
-                <i className="fas fa-play-circle me-2"></i>
-                All Lessons
-              </h5>
+        <button
+          className="btn btn-outline-primary btn-sm d-lg-none"
+          onClick={() => setMobileSidebarOpen(true)}
+        >
+          Filter ({filteredFiles.length})
+        </button>
+      </div>
+
+      <div className="d-flex flex-grow-1 overflow-hidden">
+        {/* Main Viewer */}
+        <div className="flex-grow-1 overflow-auto p-3 bg-light">
+          {renderViewer()}
+        </div>
+
+        {/* Desktop Sidebar */}
+        <div className="d-none d-lg-flex flex-column bg-white border-start" style={{ width: '340px' }}>
+          <div className="p-4 border-bottom bg-light">
+            <h5 className="mb-3">Lessons ({filteredFiles.length})</h5>
+
+            <input
+              type="text"
+              placeholder="Search lessons..."
+              className="form-control form-control-sm mb-3"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+
+            <select
+              className="form-select form-select-sm mb-2"
+              value={selectedModule}
+              onChange={(e) => {
+                setSelectedModule(e.target.value)
+                setSelectedTopic('all')
+              }}
+            >
+              <option value="all">All Modules</option>
+              {courseModules.map(m => (
+                <option key={m.id} value={m.id}>{m.name}</option>
+              ))}
+            </select>
+
+            {selectedModule !== 'all' && topicOptions.length > 0 && (
+              <select
+                className="form-select form-select-sm mb-2"
+                value={selectedTopic}
+                onChange={(e) => setSelectedTopic(e.target.value)}
+              >
+                <option value="all">All Topics</option>
+                {topicOptions.map(t => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
+              </select>
+            )}
+
+            <select
+              className="form-select form-select-sm"
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+            >
+              <option value="all">All Types</option>
+              <option value="pdf">PDF Only</option>
+              <option value="video">Video Only</option>
+            </select>
+          </div>
+
+          <div className="overflow-auto flex-grow-1">
+            {filteredFiles.length === 0 ? (
+              <div className="p-4 text-center text-muted">No files found</div>
+            ) : (
+              filteredFiles.map((file, i) => (
+                <div
+                  key={i}
+                  className={`px-4 py-3 border-bottom cursor-pointer transition-all ${
+                    selectedFile.name === file.name ? 'bg-primary text-white' : 'hover-bg-light'
+                  }`}
+                  onClick={() => {
+                    setSelectedFile(file)
+                    setLoading(true)
+                  }}
+                >
+                  <div className="d-flex align-items-center gap-3">
+                    <i className={`fs-4 ${
+                      file.type?.includes('video') ? 'fas fa-play-circle text-success' : 'fas fa-file-pdf text-danger'
+                    }`} />
+                    <div className="text-truncate flex-grow-1">{file.name}</div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Sidebar */}
+      {mobileSidebarOpen && (
+        <div className="position-fixed inset-0 bg-black bg-opacity-50 z-50 d-lg-none" onClick={() => setMobileSidebarOpen(false)}>
+          <div
+            className="position-absolute top-0 end-0 bg-white h-100 shadow-lg overflow-hidden"
+            style={{ width: '85%', maxWidth: '380px' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4 bg-primary text-white d-flex justify-content-between align-items-center border-bottom">
+              <h5 className="mb-0">Filter & Lessons</h5>
+              <button className="btn-close btn-close-white" onClick={() => setMobileSidebarOpen(false)} />
             </div>
 
-            {/* Scrollable Content */}
-            <div className="flex-grow-1 overflow-auto">
-              {lessons.map((file, idx) => (
+            <div className="p-3 border-bottom bg-light">
+              <input
+                type="text"
+                placeholder="Search..."
+                className="form-control form-control-sm mb-3"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <select className="form-select form-select-sm mb-2" value={selectedModule} onChange={e => setSelectedModule(e.target.value)}>
+                <option value="all">All Modules</option>
+                {courseModules.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+              </select>
+              <select className="form-select form-select-sm" value={selectedType} onChange={e => setSelectedType(e.target.value)}>
+                <option value="all">All Types</option>
+                <option value="pdf">PDF</option>
+                <option value="video">Video</option>
+              </select>
+            </div>
+
+            <div className="overflow-auto" style={{ height: 'calc(100vh - 200px)' }}>
+              {filteredFiles.map((file, i) => (
                 <div
-                  key={idx}
-                  className={`p-3 border-bottom cursor-pointer ${
-                    selectedFile.name === file.name
-                      ? 'bg-primary bg-opacity-10 border-primary border-end-3'
-                      : 'hover-bg-light'
-                  }`}
-                  onClick={() => setSelectedFile(file)}
-                  style={{ cursor: 'pointer' }}
+                  key={i}
+                  className="px-4 py-3 border-bottom cursor-pointer hover-bg-light"
+                  onClick={() => {
+                    setSelectedFile(file)
+                    setLoading(true)
+                    setMobileSidebarOpen(false)
+                  }}
                 >
-                  <div className="d-flex align-items-center">
-                    <div className="me-3 flex-shrink-0">
-                      {renderFileIcon(file)}
-                    </div>
-                    <div className="flex-grow-1 min-width-0">
-                      <h6 className="mb-1 fw-medium text-truncate">{file.name}</h6>
-                      <small className="text-muted text-uppercase fw-bold">{file.type}</small>
-                    </div>
-                    <div className="flex-shrink-0">
-                      {selectedFile.name === file.name && (
-                        <i className="fas fa-chevron-right text-primary"></i>
-                      )}
-                    </div>
+                  <div className="d-flex align-items-center gap-3">
+                    <i className={`fs-5 ${
+                      file.type?.includes('video') ? 'fas fa-play-circle text-success' : 'fas fa-file-pdf text-danger'
+                    }`} />
+                    <div>{file.name}</div>
                   </div>
                 </div>
               ))}
             </div>
           </div>
         </div>
-
-        {/* Mobile Sidebar Overlay */}
-        {isMobileSidebarOpen && (
-          <div className="d-lg-none position-fixed top-0 start-0 w-100 h-100" style={{ zIndex: 9999 }}>
-            {/* Backdrop */}
-            <div
-              className="position-absolute top-0 start-0 w-100 h-100 bg-black bg-opacity-50"
-              onClick={() => setIsMobileSidebarOpen(false)}
-            ></div>
-
-            {/* Sidebar */}
-            <div className="position-absolute top-0 end-0 bg-white h-100 shadow-lg" style={{ width: '80%', maxWidth: '350px' }}>
-              <div className="h-100 d-flex flex-column">
-                {/* Header */}
-                <div className="p-3 bg-primary text-white d-flex justify-content-between align-items-center flex-shrink-0">
-                  <h5 className="mb-0">
-                    <i className="fas fa-play-circle me-2"></i>
-                    All Lessons
-                  </h5>
-                  <button
-                    className="btn btn-link text-white p-0"
-                    onClick={() => setIsMobileSidebarOpen(false)}
-                  >
-                    <i className="fas fa-times fs-4"></i>
-                  </button>
-                </div>
-
-                {/* Scrollable Content */}
-                <div className="flex-grow-1 overflow-auto">
-                  {lessons.map((file, idx) => (
-                    <div
-                      key={idx}
-                      className={`p-3 border-bottom cursor-pointer ${
-                        selectedFile.name === file.name
-                          ? 'bg-primary bg-opacity-10'
-                          : ''
-                      }`}
-                      onClick={() => handleMobileFileSelect(file)}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <div className="d-flex align-items-center">
-                        <div className="me-3 flex-shrink-0">
-                          {renderFileIcon(file, 'fs-3')}
-                        </div>
-                        <div className="flex-grow-1 min-width-0">
-                          <h6 className="mb-1 fw-medium">{file.name}</h6>
-                          <small className="text-muted text-uppercase fw-bold">{file.type}</small>
-                        </div>
-                        <div className="flex-shrink-0">
-                          {selectedFile.name === file.name && (
-                            <i className="fas fa-check-circle text-success fs-5"></i>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+      )}
+    </>
   )
 }
 
 export default LessonPlayer
-
-
-
