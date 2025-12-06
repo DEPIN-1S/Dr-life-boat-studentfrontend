@@ -101,14 +101,14 @@ const LessonPlayer = () => {
         <div className="d-flex flex-column h-100 bg-white rounded shadow-sm overflow-hidden">
           <div className="p-3 bg-light border-bottom d-flex justify-content-between align-items-center">
             <h6 className="mb-0 fw-bold text-truncate">{name}</h6>
-            <a
+            {/* <a
               href={`https://drive.google.com/uc?export=download&id=${fileId}`}
               className="btn btn-success btn-sm"
               target="_blank"
               rel="noopener noreferrer"
             >
               Download
-            </a>
+            </a> */}
           </div>
 
           {loading && (
