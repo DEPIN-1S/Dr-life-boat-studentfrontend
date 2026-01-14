@@ -72,32 +72,127 @@ const ExamQuestion = () => {
     // LOAD adaptive state (either from localStorage or fresh from API)
     loadAdaptiveState();
 
-    // start timer
-    const startTimer = () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-      timerRef.current = setInterval(() => {
-        const remaining = Math.floor((endTimeRef.current - Date.now()) / 1000);
-        if (remaining <= 0) {
-          setTimeLeft(0);
-          setTimeUp(true);
-          clearInterval(timerRef.current);
-          timerRef.current = null;
-          handleTimeout();
-        } else {
-          setTimeLeft(remaining);
-        }
-      }, 1000);
+    // Browser close / reload protection
+    const handleBeforeUnload = (e) => {
+      // Attempt to save state or blocking alert
+      e.preventDefault();
+      e.returnValue = ''; // trigger browser confirmation
+      // Best-effort silent submit via Beacon if truly closing (hard to distinguish from refresh, but safer)
+      // Note: We can't easily distinguish refresh vs close here reliably to force submit,
+      // but we can ensure we save state.
     };
-    startTimer();
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    // Visibility change handling (optional fallback)
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // could sync time here if needed
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       if (timerRef.current) {
-        clearInterval(timerRef.current);
+        timerRef.current.terminate(); // Terminate worker
         timerRef.current = null;
       }
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [examId, navigate, examMinutes]);
+
+  // Separate effect for Timer Worker initialization to avoid re-creating on every render
+  useEffect(() => {
+    if (!examId) return;
+
+    const EXAM_START_KEY = `examStartTime_${examId}`;
+    let examStartTime = parseInt(localStorage.getItem(EXAM_START_KEY) || '0');
+    if (!examStartTime || isNaN(examStartTime)) {
+      examStartTime = Date.now();
+      localStorage.setItem(EXAM_START_KEY, examStartTime.toString());
+    }
+    const totalMs = examMinutes * 60 * 1000;
+    const endTime = examStartTime + totalMs;
+    endTimeRef.current = endTime;
+
+    // Calculate initial timeLeft
+    const syncTime = () => {
+      const now = Date.now();
+      const diff = Math.floor((endTimeRef.current - now) / 1000);
+      if (diff <= 0) {
+        setTimeLeft(0);
+        setTimeUp(true);
+        handleTimeout();
+        return false; // active = false
+      }
+      setTimeLeft(diff);
+      return true;
+    };
+
+    // Initial sync
+    if (!syncTime()) return;
+
+    // Start Worker
+    if (!timerRef.current) {
+      timerRef.current = new Worker(new URL('./examTimer.worker.js', import.meta.url));
+      timerRef.current.onmessage = (e) => {
+        if (e.data === 'tick') {
+          // Re-calculate from Date.now() for accuracy (worker just triggers the check)
+          syncTime();
+        }
+      };
+      timerRef.current.postMessage('start');
+    }
+
+    return () => {
+      // worker cleanup is in the main mount effect or here if we want strictly scoped
+    };
+  }, [examId, examMinutes]);
+
+  // Missing handleTimeout definition
+  const isSubmittingRef = useRef(false);
+
+  const handleTimeout = async () => {
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+
+    // Clear any workers
+    if (timerRef.current) {
+      timerRef.current.postMessage('stop');
+      timerRef.current.terminate();
+    }
+
+    setTimeUp(true);
+
+    // Auto-submit logic
+    try {
+      await submitExam(true); // true = isTimeout
+
+      // Clean up local data
+      localStorage.removeItem(`adaptive_list_${examId}`);
+      localStorage.removeItem(`adaptive_state_${examId}`);
+      localStorage.removeItem(`examStartTime_${examId}`);
+      clearExamData();
+
+      Swal.fire({
+        icon: 'info',
+        title: 'Time is up!',
+        text: 'Your exam has been submitted automatically.',
+        confirmButtonText: 'View Results',
+        allowOutsideClick: false
+      }).then(() => {
+        // We don't have the result ID easily here unless submitExam returns it. 
+        // submitExam saves to sessionStorage logic.
+        // We'll redirect to a generic result page or home if ID missing.
+        navigate('/exam');
+      });
+    } catch (error) {
+      console.error("Auto-submit failed", error);
+      Swal.fire('Error', 'Auto-submission encountered an issue. Please contact support.', 'error');
+    }
+  };
+
 
   // persist simple UI state
   useEffect(() => {
@@ -150,7 +245,7 @@ const ExamQuestion = () => {
 
         // If there's a currentQuestionId in saved state -> fetch its details
         if (savedState.currentQuestionId) {
-         await fetchQuestionDetails(savedState.currentQuestionId);
+          await fetchQuestionDetails(savedState.currentQuestionId);
           // set currentIndex to where this id appears in original flatIds if found
           const idx = flatIds.findIndex(id => id === savedState.currentQuestionId);
           if (idx !== -1) setCurrentIndex(idx);
@@ -248,98 +343,98 @@ const ExamQuestion = () => {
   //     Swal.fire('Error', 'Failed to load question.', 'error');
   //   }
   // };
-const fetchQuestionDetails = async (questionId) => {
-  if (!questionId) return;
+  const fetchQuestionDetails = async (questionId) => {
+    if (!questionId) return;
 
-  try {
-    const res = await axios({
-      url: `${baseUrl}/drlifeboat/student/exam/question`,
-      method: 'POST',
-      headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
-      data: { examId, exam_question_id: questionId },
-    });
-
-    // SUCCESS: Fresh question
-    if (res.data?.result && res.data.data) {
-      const q = res.data.data;
-
-      // Normalize question text
-      if (!Array.isArray(q.q_question)) {
-        q.q_question = typeof q.q_question === 'string' ? [q.q_question] : [];
-      }
-
-      // Handle images (both old and new formats)
-      let imagePaths = [];
-      if (q.question_images) {
-        imagePaths = q.question_images.split(',').map(s => s.trim()).filter(Boolean);
-      }
-      if (Array.isArray(q.q_question_image) && q.q_question_image.length > 0) {
-        imagePaths = q.q_question_image.map(img => img.qi_file).filter(Boolean);
-      }
-
-      const qid = q.id || q.eq_id || q.exam_question_id || questionId;
-
-      setCurrentQuestion({
-        ...q,
-        id: qid,
-        questionImages: imagePaths,
+    try {
+      const res = await axios({
+        url: `${baseUrl}/drlifeboat/student/exam/question`,
+        method: 'POST',
+        headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
+        data: { examId, exam_question_id: questionId },
       });
 
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      setQuestionStartTime(Date.now());
-      return true;
-    }
+      // SUCCESS: Fresh question
+      if (res.data?.result && res.data.data) {
+        const q = res.data.data;
 
-    // ALREADY ANSWERED → Skip this question, get next one
-    if (res.data?.message?.includes("already submitted") ||
+        // Normalize question text
+        if (!Array.isArray(q.q_question)) {
+          q.q_question = typeof q.q_question === 'string' ? [q.q_question] : [];
+        }
+
+        // Handle images (both old and new formats)
+        let imagePaths = [];
+        if (q.question_images) {
+          imagePaths = q.question_images.split(',').map(s => s.trim()).filter(Boolean);
+        }
+        if (Array.isArray(q.q_question_image) && q.q_question_image.length > 0) {
+          imagePaths = q.q_question_image.map(img => img.qi_file).filter(Boolean);
+        }
+
+        const qid = q.id || q.eq_id || q.exam_question_id || questionId;
+
+        setCurrentQuestion({
+          ...q,
+          id: qid,
+          questionImages: imagePaths,
+        });
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setQuestionStartTime(Date.now());
+        return true;
+      }
+
+      // ALREADY ANSWERED → Skip this question, get next one
+      if (res.data?.message?.includes("already submitted") ||
         res.data?.message?.toLowerCase().includes("already")) {
 
-      console.log(`Question ${questionId} already answered. Skipping to next...`);
+        console.log(`Question ${questionId} already answered. Skipping to next...`);
 
-      // Mark as answered locally
-      setLockedQuestions(prev => new Set([...prev, questionId]));
+        // Mark as answered locally
+        setLockedQuestions(prev => new Set([...prev, questionId]));
 
-      // Ask adaptive engine for next question
-      const nextObj = adaptiveExam.getNextQuestion() || adaptiveExam.submitAnswer(null);
+        // Ask adaptive engine for next question
+        const nextObj = adaptiveExam.getNextQuestion() || adaptiveExam.submitAnswer(null);
 
-      if (nextObj?.question_id) {
-        // Save updated engine state
-        localStorage.setItem(`adaptive_state_${examId}`, JSON.stringify(adaptiveExam.serialize()));
+        if (nextObj?.question_id) {
+          // Save updated engine state
+          localStorage.setItem(`adaptive_state_${examId}`, JSON.stringify(adaptiveExam.serialize()));
 
-        // Load next question
-        fetchQuestionDetails(nextObj.question_id);
-        const idx = questions.findIndex(q => q === nextObj.question_id);
-        if (idx !== -1) setCurrentIndex(idx);
-      } else {
-        // No more questions → exam complete
-        console.log("All questions answered or no more available.");
-        setShowModal(true); // Trigger final submit
+          // Load next question
+          fetchQuestionDetails(nextObj.question_id);
+          const idx = questions.findIndex(q => q === nextObj.question_id);
+          if (idx !== -1) setCurrentIndex(idx);
+        } else {
+          // No more questions → exam complete
+          console.log("All questions answered or no more available.");
+          setShowModal(true); // Trigger final submit
+        }
+        return false;
       }
-      return false;
-    }
 
-    // Any other error
-    console.warn("Unknown response:", res.data);
-    Swal.fire('Error', res.data?.message || 'Failed to load question', 'error');
+      // Any other error
+      console.warn("Unknown response:", res.data);
+      Swal.fire('Error', res.data?.message || 'Failed to load question', 'error');
 
-  } catch (err) {
-    console.error('fetchQuestionDetails error:', err);
+    } catch (err) {
+      console.error('fetchQuestionDetails error:', err);
 
-    // Network or unexpected error → try next question as fallback?
-    if (err.response?.data?.message?.includes("already submitted")) {
-      // Same handling as above
-      setLockedQuestions(prev => new Set([...prev, questionId]));
-      const nextObj = adaptiveExam.getNextQuestion();
-      if (nextObj) {
-        fetchQuestionDetails(nextObj.question_id);
+      // Network or unexpected error → try next question as fallback?
+      if (err.response?.data?.message?.includes("already submitted")) {
+        // Same handling as above
+        setLockedQuestions(prev => new Set([...prev, questionId]));
+        const nextObj = adaptiveExam.getNextQuestion();
+        if (nextObj) {
+          fetchQuestionDetails(nextObj.question_id);
+        } else {
+          setShowModal(true);
+        }
       } else {
-        setShowModal(true);
+        Swal.fire('Error', 'Failed to load question. Please try again.', 'error');
       }
-    } else {
-      Swal.fire('Error', 'Failed to load question. Please try again.', 'error');
     }
-  }
-};
+  };
 
   const submitQuestions = async (questionId) => {
     const submittedAnswer = responses[questionId];
@@ -711,7 +806,7 @@ const fetchQuestionDetails = async (questionId) => {
     return (
       <div className="exam-container" style={{ textAlign: 'center', padding: '50px', color: '#6c757d' }}>
         <p>No questions available.</p>
-        <button style={{border:"20px", color:"blue", textAlign: 'center' }} onClick={() => navigate('/exam')}>Back to Exams</button>
+        <button style={{ border: "20px", color: "blue", textAlign: 'center' }} onClick={() => navigate('/exam')}>Back to Exams</button>
       </div>
     );
   }

@@ -1,24 +1,73 @@
-.speed-2x-btn::before {
-  content: '2x';
-  font-size: 14px;
-  padding: 0 5px;
+
+
+.video-player-container,
+.video-js {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 60vh;
+  background: #000;
 }
 
-.speed-3x-btn::before {
-  content: '3x';
-  font-size: 14px;
-  padding: 0 5px;
+.video-js .vjs-tech {
+  object-fit: contain !important;
+  background: #000 !important;
 }
 
-.speed-1x-btn::before {
-  content: '1x';
-  font-size: 14px;
-  padding: 0 5px;
+/* Big Play Button - Beautiful & Centered */
+.vjs-big-play-button {
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  width: 90px !important;
+  height: 90px !important;
+  line-height: 90px !important;
+  border-radius: 50% !important;
+  font-size: 42px !important;
+  background-color: rgba(0, 0, 0, 0.7) !important;
+  border: 4px solid white !important;
+  transition: all 0.2s;
 }
-/* .vjs-icon-replay:before {
-  content: '\f04a';
-} */
 
-.vjs-icon-forward:before {
-  content: '\f04e';
+.vjs-big-play-button:hover {
+  background-color: rgba(13, 110, 253, 0.9) !important;
+  border-color: white !important;
+}
+
+/* Control Bar */
+.vjs-control-bar {
+  background: linear-gradient(transparent, rgba(0,0,0,0.8)) !important;
+  height: 60px !important;
+  padding: 0 10px;
+}
+
+/* Custom Speed Buttons */
+.vjs-speed-btn {
+  background: rgba(255,255,255,0.15) !important;
+  color: white !important;
+  border-radius: 6px !important;
+  padding: 0 10px !important;
+  font-weight: bold !important;
+  margin: 0 4px;
+  min-width: 44px;
+}
+
+.vjs-speed-btn:hover {
+  background: rgba(255,255,255,0.3) !important;
+}
+
+/* Rewind / Forward Icons */
+.vjs-icon-replay-10::before { content: "10s"; font-weight: bold; }
+.vjs-icon-forward-10::before { content: "10s"; font-weight: bold; }
+
+/* Progress Bar */
+.vjs-play-progress {
+  background-color: #0d6efd !important;
+}
+
+.vjs-load-progress {
+  background: rgba(255,255,255,0.3) !important;
+}
+
+.vjs-volume-level {
+  background-color: #0d6efd !important;
 }

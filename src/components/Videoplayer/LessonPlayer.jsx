@@ -1,21 +1,22 @@
-// src/components/Videoplayer/LessonPlayer.jsx
+
 import React, { useState, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import VideoPlayer from '../VideoPlayer'
+import './LessonPlayer.css' // ← Make sure this file exists
 
 const LessonPlayer = () => {
   const { state } = useLocation()
   const navigate = useNavigate()
 
   const allFiles = state?.allFiles || []
-  const courseDetails = state?.courseDetails || {}
-  const courseModules = courseDetails.modules || []
+  const courseDetailsdock = state?.courseDetails || {}
+  const courseModules = courseDetailsdock.modules || []
 
   const [selectedFile, setSelectedFile] = useState(state?.selected || allFiles[0])
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const [loading, setLoading] = useState(true)
 
-  // Filter states
+  // Filters
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedModule, setSelectedModule] = useState('all')
   const [selectedTopic, setSelectedTopic] = useState('all')
@@ -98,19 +99,10 @@ const LessonPlayer = () => {
 
     if ((type === 'pdf' || file_link?.includes('drive.google.com')) && fileId) {
       return (
-        <div className="d-flex flex-column h-100 bg-white rounded shadow-sm overflow-hidden">
-          <div className="p-3 bg-light border-bottom d-flex justify-content-between align-items-center">
+        <div className="d-flex flex-column bg-white rounded shadow-sm overflow-hidden h-100">
+          <div className="p-3 bg-light border-bottom">
             <h6 className="mb-0 fw-bold text-truncate">{name}</h6>
-            {/* <a
-              href={`https://drive.google.com/uc?export=download&id=${fileId}`}
-              className="btn btn-success btn-sm"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Download
-            </a> */}
           </div>
-
           {loading && (
             <div className="position-absolute top-50 start-50 translate-middle z-10">
               <div className="spinner-border text-primary" role="status">
@@ -118,14 +110,12 @@ const LessonPlayer = () => {
               </div>
             </div>
           )}
-
           <iframe
             src={`https://drive.google.com/file/d/${fileId}/preview`}
             title={name}
-            className="border-0 w-100 flex-grow-1"
+            className="w-100 flex-grow-1 border-0"
             onLoad={() => setLoading(false)}
-            style={{ minHeight: '60vh' }}
-            sandbox="allow-scripts allow-same-origin allow-popups"
+            sandbox="allow-scripts allow-same-origin allow-popups allow-modals"
           />
         </div>
       )
@@ -135,40 +125,53 @@ const LessonPlayer = () => {
       ? `https://drive.google.com/uc?export=download&id=${fileId}`
       : file_link
 
-    return <VideoPlayer src={videoUrl} title={name} />
+    return (
+      <div className="bg-black rounded overflow-hidden shadow-sm h-100 d-flex flex-column">
+        <div className="p-3 bg-light border-bottom">
+          <h6 className="mb-0 fw-bold text-truncate">{name}</h6>
+        </div>
+        <div className="flex-grow-1 position-relative">
+          <VideoPlayer src={videoUrl} title={name} />
+        </div>
+      </div>
+    )
   }
 
   return (
-    <>
+    <div className="d-flex flex-column vh-100 bg-light">
+
       {/* Top Bar */}
-      <div className="bg-white border-bottom px-3 py-2 d-flex align-items-center justify-content-between shadow-sm" style={{ height: '60px' }}>
-        <div className="d-flex align-items-center">
-          <button onClick={() => navigate(-1)} className="btn btn-link text-dark p-0 me-3">
+      <div className="bg-white border-bottom px-3 px-md-4 py-3 shadow-sm d-flex align-items-center justify-content-between flex-shrink-0" style={{ height: '64px' }}>
+        <div className="d-flex align-items-center gap-3">
+          <button onClick={() => navigate(-1)} className="btn btn-link text-dark p-0">
             ← Back
           </button>
-          <h6 className="mb-0 text-truncate" style={{ maxWidth: '200px' }}>
+          <h6 className="mb-0 text-truncate" style={{ maxWidth: '500px' }}>
             {selectedFile.name}
           </h6>
         </div>
 
+        {/* Mobile Toggle Button */}
         <button
-          className="btn btn-outline-primary btn-sm d-lg-none"
+          className="btn btn-outline-primary btn-sm d-lg-none mobile-toggle-btn"
           onClick={() => setMobileSidebarOpen(true)}
         >
-          Filter ({filteredFiles.length})
+          Lessons ({filteredFiles.length})
         </button>
       </div>
 
+      {/* Main Layout */}
       <div className="d-flex flex-grow-1 overflow-hidden">
-        {/* Main Viewer */}
-        <div className="flex-grow-1 overflow-auto p-3 bg-light">
+
+        {/* Viewer Area */}
+        <div className="flex-grow-1 overflow-auto content-area">
           {renderViewer()}
         </div>
 
         {/* Desktop Sidebar */}
-        <div className="d-none d-lg-flex flex-column bg-white border-start" style={{ width: '340px' }}>
+        <div className="d-none d-lg-flex flex-column bg-white border-start desktop-sidebar">
           <div className="p-4 border-bottom bg-light">
-            <h5 className="mb-3">Lessons ({filteredFiles.length})</h5>
+            <h5 className="mb-3 fw-bold">Lessons ({filteredFiles.length})</h5>
 
             <input
               type="text"
@@ -216,15 +219,16 @@ const LessonPlayer = () => {
             </select>
           </div>
 
-          <div className="overflow-auto flex-grow-1">
+          {/* Scrollable Lesson List */}
+          <div  className="flex-grow-1 overflow-auto custom-scrollbar">
             {filteredFiles.length === 0 ? (
-              <div className="p-4 text-center text-muted">No files found</div>
+              <div className="p-5 text-center text-muted">No lessons found</div>
             ) : (
               filteredFiles.map((file, i) => (
                 <div
-                  key={i}
-                  className={`px-4 py-3 border-bottom cursor-pointer transition-all ${
-                    selectedFile.name === file.name ? 'bg-primary text-white' : 'hover-bg-light'
+                  key={file.id || i}
+                  className={`px-4 py-3 border-bottom cursor-pointer transition-all hover-bg-light ${
+                    (selectedFile.id === file.id || selectedFile.name === file.name) ? 'lesson-item-active' : ''
                   }`}
                   onClick={() => {
                     setSelectedFile(file)
@@ -232,10 +236,14 @@ const LessonPlayer = () => {
                   }}
                 >
                   <div className="d-flex align-items-center gap-3">
-                    <i className={`fs-4 ${
-                      file.type?.includes('video') ? 'fas fa-play-circle text-success' : 'fas fa-file-pdf text-danger'
-                    }`} />
-                    <div className="text-truncate flex-grow-1">{file.name}</div>
+                    <i
+                      className={`fs-4 ${
+                        file.type?.toLowerCase().includes('video') || file.file_link?.includes('.mp4')
+                          ? 'fas fa-play-circle text-success'
+                          : 'fas fa-file-pdf text-danger'
+                      }`}
+                    />
+                    <div className="text-truncate">{file.name}</div>
                   </div>
                 </div>
               ))
@@ -244,17 +252,20 @@ const LessonPlayer = () => {
         </div>
       </div>
 
-      {/* Mobile Sidebar */}
+      {/* Mobile Sidebar Overlay */}
       {mobileSidebarOpen && (
-        <div className="position-fixed inset-0 bg-black bg-opacity-50 z-50 d-lg-none" onClick={() => setMobileSidebarOpen(false)}>
+        <>
           <div
-            className="position-absolute top-0 end-0 bg-white h-100 shadow-lg overflow-hidden"
-            style={{ width: '85%', maxWidth: '380px' }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-4 bg-primary text-white d-flex justify-content-between align-items-center border-bottom">
-              <h5 className="mb-0">Filter & Lessons</h5>
-              <button className="btn-close btn-close-white" onClick={() => setMobileSidebarOpen(false)} />
+            className="mobile-sidebar-overlay"
+            onClick={() => setMobileSidebarOpen(false)}
+          />
+          <div className="mobile-sidebar">
+            <div className="mobile-sidebar-header">
+              <h5 className="mb-0">Lessons</h5>
+              <button
+                className="btn-close btn-close-white"
+                onClick={() => setMobileSidebarOpen(false)}
+              />
             </div>
 
             <div className="p-3 border-bottom bg-light">
@@ -265,21 +276,32 @@ const LessonPlayer = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <select className="form-select form-select-sm mb-2" value={selectedModule} onChange={e => setSelectedModule(e.target.value)}>
+              <select
+                className="form-select form-select-sm mb-2"
+                value={selectedModule}
+                onChange={(e) => {
+                  setSelectedModule(e.target.value)
+                  setSelectedTopic('all')
+                }}
+              >
                 <option value="all">All Modules</option>
                 {courseModules.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
               </select>
-              <select className="form-select form-select-sm" value={selectedType} onChange={e => setSelectedType(e.target.value)}>
+              <select
+                className="form-select form-select-sm"
+                value={selectedType}
+                onChange={(e) => setSelectedType(e.target.value)}
+              >
                 <option value="all">All Types</option>
                 <option value="pdf">PDF</option>
                 <option value="video">Video</option>
               </select>
             </div>
 
-            <div className="overflow-auto" style={{ height: 'calc(100vh - 200px)' }}>
+            <div className="overflow-auto flex-grow-1 custom-scrollbar">
               {filteredFiles.map((file, i) => (
                 <div
-                  key={i}
+                  key={file.id || i}
                   className="px-4 py-3 border-bottom cursor-pointer hover-bg-light"
                   onClick={() => {
                     setSelectedFile(file)
@@ -288,18 +310,22 @@ const LessonPlayer = () => {
                   }}
                 >
                   <div className="d-flex align-items-center gap-3">
-                    <i className={`fs-5 ${
-                      file.type?.includes('video') ? 'fas fa-play-circle text-success' : 'fas fa-file-pdf text-danger'
-                    }`} />
+                    <i
+                      className={`fs-5 ${
+                        file.type?.includes('video') || file.file_link?.includes('.mp4')
+                          ? 'fas fa-play-circle text-success'
+                          : 'fas fa-file-pdf text-danger'
+                      }`}
+                    />
                     <div>{file.name}</div>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-        </div>
+        </>
       )}
-    </>
+    </div>
   )
 }
 
