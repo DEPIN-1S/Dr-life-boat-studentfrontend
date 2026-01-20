@@ -35,7 +35,7 @@ const ProtectedExamQuestion = () => {
 
   useEffect(() => {
     // Attempt to recover exam data from sessionStorage if not available in location.state
-    const storedExam = JSON.parse(sessionStorage.getItem('currentExam') || '{}');
+    const storedExam = JSON.parse(localStorage.getItem('currentExam') || '{}');
     if (storedExam?.ex_id && Object.keys(exam).length === 0) {
       setExam(storedExam);
     } else if (!storedExam?.ex_id && !exam?.ex_id) {

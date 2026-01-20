@@ -21,7 +21,7 @@ const TestInstructions = () => {
     );
   }
 
-  sessionStorage.setItem('currentExam', JSON.stringify(exam));
+  localStorage.setItem('currentExam', JSON.stringify(exam));
 
   return (
     <div className="test-fullscreen">

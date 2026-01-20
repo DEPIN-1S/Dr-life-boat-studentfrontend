@@ -57,6 +57,11 @@ const ExamQuestion = () => {
       examStartTime = Date.now();
       localStorage.setItem(EXAM_START_KEY, examStartTime.toString());
     }
+    if (!examMinutes || examMinutes <= 0) {
+      console.error("Invalid exam duration:", examMinutes);
+      Swal.fire('Error', 'Exam duration data is missing. Please restart the exam.', 'error').then(() => navigate('/exam'));
+      return;
+    }
     const totalMs = examMinutes * 60 * 1000;
     const endTime = examStartTime + totalMs;
     endTimeRef.current = endTime;
