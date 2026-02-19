@@ -6,10 +6,10 @@ import {
   CDropdownItem,
   CAvatar,
 } from '@coreui/react';
+import { API_BASE_URL } from '../../utils/apiConfig';
 import { useNavigate } from 'react-router-dom';
 
-
-const API_BASE = 'https://lunarsenterprises.com:6028';
+const API_BASE = API_BASE_URL;
 
 const AppHeaderDropdown = () => {
   const [userName, setUserName] = useState('Loading...');
@@ -59,9 +59,8 @@ const AppHeaderDropdown = () => {
     loadUser();
   }, [navigate]);
 
-  // Fallback avatar with name initials
-  const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=6366f1&color=fff&size=128&bold=true`;
 
+ 
   return (
     <CDropdown variant="nav-item">
       <CDropdownToggle placement="bottom-end" className="py-0 pe-0" caret={false}>
@@ -71,13 +70,9 @@ const AppHeaderDropdown = () => {
 
           </div>
           <CAvatar
-            src={userImage || fallbackAvatar}
+            src={userImage }
             size="md"
             className="shadow border border-2 border-white"
-
-            onError={(e) => {
-              e.currentTarget.src = fallbackAvatar;
-            }}
           />
         </div>
       </CDropdownToggle>
@@ -87,12 +82,21 @@ const AppHeaderDropdown = () => {
           {userName}
         </CDropdownItem>
         <CDropdownItem divider />
+
         <CDropdownItem
           onClick={() => navigate('/profile')}
           style={{ cursor: 'pointer' }}
         >
           My Profile
         </CDropdownItem>
+
+        {/* <CDropdownItem
+          onClick={() => navigate('/forgot-password')}
+          style={{ cursor: 'pointer' }}
+        >
+          Forgot Password
+        </CDropdownItem> */}
+
         <CDropdownItem
           onClick={() => {
             sessionStorage.clear();

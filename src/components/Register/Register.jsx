@@ -4,6 +4,7 @@ import { Eye, EyeOff } from 'lucide-react'
 import Swal from 'sweetalert2'
 import { useNavigate } from 'react-router-dom'
 import './register.css'
+import { API_BASE_URL } from '../../utils/apiConfig'
 
 export default function Register() {
   const navigate = useNavigate()
@@ -17,12 +18,42 @@ export default function Register() {
     password: '',
     confirmPassword: '',
     country: '',
+    state: '',
+    district: '',
+    location: '',
   })
   const [load, setLoad] = useState('')
   const [error, setError] = useState('')
+  const [currentStep, setCurrentStep] = useState(1)
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
+  }
+
+  const handleNext = () => {
+    setError('')
+    if (currentStep === 1) {
+      if (!formData.name || !formData.email || !formData.phone) {
+        setError('Please fill in all fields')
+        return
+      }
+    } else if (currentStep === 2) {
+      if (!formData.password || !formData.confirmPassword) {
+        setError('Please fill in all password fields')
+        return
+      }
+      if (formData.password !== formData.confirmPassword) {
+        setError('Passwords do not match')
+        return
+      }
+    }
+    setCurrentStep((prev) => prev + 1)
+  }
+
+  const handlePrev = () => {
+    setError('')
+    setCurrentStep((prev) => prev - 1)
   }
 
   useEffect(() => {
@@ -48,17 +79,22 @@ export default function Register() {
       return
     }
 
+    setIsLoading(true)
+
     const payload = {
       name: formData.name,
       email: formData.email,
       phone: formData.phone,
       password: formData.password,
       country: formData.country,
+      state: formData.state,
+      district: formData.district,
+      location: formData.location,
     }
 
     try {
       const response = await axios.post(
-        import.meta.env.VITE_BASE_URL + '/drlifeboat/student/register',
+        `${API_BASE_URL}/drlifeboat/student/register`,
         payload,
         {
           headers: {
@@ -74,6 +110,9 @@ export default function Register() {
         password: '',
         confirmPassword: '',
         country: '',
+        state: '',
+        district: '',
+        location: '',
       })
 
       if (response.data.result === true) {
@@ -103,6 +142,8 @@ export default function Register() {
         setError('Network error. Please try again.')
       }
       console.error('Registration error:', err)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -122,89 +163,170 @@ export default function Register() {
 
         <div className="register-right">
           <form className="register-form" onSubmit={handleRegister}>
-            <label>Name</label>
-            <input
-              type="text"
-              name="name"
-              placeholder="Enter your name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-            />
+            {/* Step 1: Personal Details */}
+            {currentStep === 1 && (
+              <>
+                <label>Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="Enter your name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                />
 
-            <label>Email</label>
-            <input
-              type="email"
-              name="email"
-              placeholder="Enter your email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
+                <label>Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Enter your email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                />
 
-            <label>Phone</label>
-            <input
-              type="tel"
-              name="phone"
-              placeholder="Enter your phone"
-              value={formData.phone}
-              onChange={handleChange}
-              required
-            />
+                <label>Phone</label>
+                <input
+                  type="tel"
+                  name="phone"
+                  placeholder="Enter your phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  required
+                />
+              </>
+            )}
 
-            <label>Password</label>
-            <div className="password-field">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                name="password"
-                placeholder="Enter password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-              />
-              <button
-                type="button"
-                className="toggle-btn"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
+            {/* Step 2: Password Details */}
+            {currentStep === 2 && (
+              <>
+                <label>Password</label>
+                <div className="password-field">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    placeholder="Enter password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="toggle-btn"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+
+                <label>Confirm Password</label>
+                <div className="password-field">
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    name="confirmPassword"
+                    placeholder="Confirm password"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="toggle-btn"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* Step 3: Location Details */}
+            {currentStep === 3 && (
+              <>
+                <label>Country</label>
+                <input
+                  type="text"
+                  name="country"
+                  placeholder="Enter your country"
+                  value={formData.country}
+                  onChange={handleChange}
+                  required
+                />
+
+                <label>State</label>
+                <input
+                  type="text"
+                  name="state"
+                  placeholder="Enter your state"
+                  value={formData.state}
+                  onChange={handleChange}
+                  required
+                />
+
+                <label>District</label>
+                <input
+                  type="text"
+                  name="district"
+                  placeholder="Enter your district"
+                  value={formData.district}
+                  onChange={handleChange}
+                />
+
+                <label>Location</label>
+                <input
+                  type="text"
+                  name="location"
+                  placeholder="Enter your location"
+                  value={formData.location}
+                  onChange={handleChange}
+                />
+              </>
+            )}
+
+            {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
+
+            <div className="button-group" style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', marginTop: '20px' }}>
+              {currentStep > 1 && (
+                <button
+                  type="button"
+                  className="register-btn"
+                  style={{ backgroundColor: '#6c757d', color: 'white' }}
+                  onClick={handlePrev}
+                >
+                  Previous
+                </button>
+              )}
+
+              {currentStep < 3 && (
+                <button
+                  type="button"
+                  className="register-btn"
+                  onClick={handleNext}
+                >
+                  Next
+                </button>
+              )}
+
+
+              {currentStep === 3 && (
+                <button
+                  className="register-btn"
+                  type="submit"
+                  disabled={isLoading}
+                  style={{ opacity: isLoading ? 0.7 : 1, cursor: isLoading ? 'not-allowed' : 'pointer' }}
+                >
+                  {isLoading ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                      Registering...
+                    </>
+                  ) : (
+                    'Register'
+                  )}
+                </button>
+              )}
             </div>
-
-            <label>Confirm Password</label>
-            <div className="password-field">
-              <input
-                type={showConfirmPassword ? 'text' : 'password'}
-                name="confirmPassword"
-                placeholder="Confirm password"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                required
-              />
-              <button
-                type="button"
-                className="toggle-btn"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
-                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-
-            <label>Country</label>
-            <input
-              type="text"
-              name="country"
-              placeholder="Enter your country"
-              value={formData.country}
-              onChange={handleChange}
-              readOnly
-            />
-
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-
-            <button className="register-btn" type="submit">
-              Register
-            </button>
           </form>
 
           {/* <div className="footer-links">

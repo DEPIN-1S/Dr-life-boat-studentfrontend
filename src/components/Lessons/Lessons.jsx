@@ -4,6 +4,8 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { FaPlay, FaFilePdf, FaFilePowerpoint, FaChevronDown, FaChevronUp } from 'react-icons/fa'
 import './lessons.css'
 
+import { API_BASE_URL } from '../../utils/apiConfig'
+
 const Lesson = () => {
   const navigate = useNavigate()
   const { state } = useLocation()
@@ -12,7 +14,7 @@ const Lesson = () => {
   const [openTopics, setOpenTopics] = useState([])
   const [openSubtopics, setOpenSubtopics] = useState([])
 
-  const BASE_URL = import.meta.env.VITE_BASE_URL
+  const BASE_URL = API_BASE_URL
 
   if (!course || !course.modules) {
     return <div style={{ padding: '100px', textAlign: 'center' }}>No course found</div>
@@ -69,32 +71,32 @@ const Lesson = () => {
   //     }
   //   })
   // }
-const goToPlayer = (clickedFile) => {
-  // Collect EVERY file from the entire course
-  const collectAllFiles = (modules) => {
-    const files = []
-    modules.forEach(mod => {
-      if (mod.files?.length) files.push(...mod.files)
-      mod.topics?.forEach(topic => {
-        if (topic.files?.length) files.push(...topic.files)
-        topic.subtopics?.forEach(sub => {
-          if (sub.files?.length) files.push(...sub.files)
+  const goToPlayer = (clickedFile) => {
+    // Collect EVERY file from the entire course
+    const collectAllFiles = (modules) => {
+      const files = []
+      modules.forEach(mod => {
+        if (mod.files?.length) files.push(...mod.files)
+        mod.topics?.forEach(topic => {
+          if (topic.files?.length) files.push(...topic.files)
+          topic.subtopics?.forEach(sub => {
+            if (sub.files?.length) files.push(...sub.files)
+          })
         })
       })
-    })
-    return files
-  }
-
-  const allFiles = collectAllFiles(course.modules)
-
-  navigate('/lesson-player', {
-    state: {
-      allFiles,
-      selected: clickedFile,
-      courseDetails: course   // ← THIS LINE FIXES MODULE FILTER
+      return files
     }
-  })
-}
+
+    const allFiles = collectAllFiles(course.modules)
+
+    navigate('/lesson-player', {
+      state: {
+        allFiles,
+        selected: clickedFile,
+        courseDetails: course   // ← THIS LINE FIXES MODULE FILTER
+      }
+    })
+  }
   const renderFiles = (files) => {
     if (!files || files.length === 0) return null
     return files.map((f, i) => (

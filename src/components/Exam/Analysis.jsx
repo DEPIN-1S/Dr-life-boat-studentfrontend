@@ -3,6 +3,7 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { API_BASE_URL } from '../../utils/apiConfig';
 
 const Analysis = () => {
   const { examId } = useParams(); // se_id (submission ID)
@@ -42,7 +43,7 @@ const Analysis = () => {
 
   const fetchAnalysisData = async () => {
     const Bearer = sessionStorage.getItem('token');
-    const baseUrl = 'https://lunarsenterprises.com:6028';
+    const baseUrl = API_BASE_URL;
     if (!Bearer) {
       Swal.fire({
         icon: 'warning',
@@ -136,7 +137,7 @@ const Analysis = () => {
 
   const fetchExamDetails = async () => {
     const Bearer = sessionStorage.getItem('token');
-    const baseUrl = 'https://lunarsenterprises.com:6028';
+    const baseUrl = API_BASE_URL;
     if (!Bearer) {
       Swal.fire({
         icon: 'warning',

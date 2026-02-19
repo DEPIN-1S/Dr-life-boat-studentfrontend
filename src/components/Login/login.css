@@ -51,6 +51,7 @@ h2 {
   border-radius: 6px;
   border: 1px solid #ccc;
 }
+
 .dropdown {
   width: 100%;
   padding: 10px;
@@ -61,13 +62,21 @@ h2 {
   position: relative;
 }
 
+.password-field input {
+  padding-right: 40px;
+}
+
 .toggle-btn {
   position: absolute;
-  top: 8px;
+  top: 50%;
   right: 10px;
+  transform: translateY(-50%);
   background: none;
   border: none;
   cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
 }
 
 .login-options {
@@ -80,7 +89,7 @@ h2 {
   font-weight: 500;
   color: #1c7c63;
 }
-
+     
 .signin-btn {
   width: 100%;
   background-color: #1c7c63;

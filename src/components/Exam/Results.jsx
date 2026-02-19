@@ -4,6 +4,7 @@ import { FaCheck, FaTimes, FaLock, FaChevronLeft, FaChevronRight } from 'react-i
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, LineChart, Line, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { API_BASE_URL } from '../../utils/apiConfig';
 
 const Results = () => {
   const navigate = useNavigate();
@@ -118,7 +119,7 @@ const Results = () => {
 
   const fetchExamDetails = async () => {
     const Bearer = sessionStorage.getItem('token');
-    const baseUrl = import.meta.env.VITE_BASE_URL || 'https://lunarsenterprises.com:6028';
+    const baseUrl = API_BASE_URL;
     setLoading(true);
 
     try {
@@ -201,7 +202,7 @@ const Results = () => {
 
   const fetchExamInfo = async () => {
     const Bearer = sessionStorage.getItem('token');
-    const baseUrl = 'https://lunarsenterprises.com:6028';
+    const baseUrl = API_BASE_URL;
     try {
       const response = await axios({
         url: `${baseUrl}/drlifeboat/student/exam/submission/list`,
@@ -435,7 +436,7 @@ const Results = () => {
 
   const scoreColor = userScore >= 80 ? '#28a745' : userScore >= 50 ? '#ffc107' : '#dc3545';
 
-  const baseurl = 'https://lunarsenterprises.com:6028/';
+  const baseurl = API_BASE_URL;
 
   return (
     <>
@@ -450,7 +451,7 @@ const Results = () => {
       <div style={{ fontFamily: "'Segoe UI', sans-serif", maxWidth: '1200px', margin: '0 auto', padding: isMobile ? '100px 15px 80px 15px' : '20px 20px 80px 20px', minHeight: '100vh' }}>
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '30px', gap: '10px', backgroundColor: '#f8f9fa', padding: '10px', borderRadius: '10px', maxWidth: '400px', margin: '0 auto 30px' }}>
           <button onClick={() => setActiveTab('analysis')} style={{ flex: 1, padding: '12px 20px', border: 'none', backgroundColor: activeTab === 'analysis' ? '#007bff' : 'transparent', color: activeTab === 'analysis' ? 'white' : '#495057', borderRadius: '8px', fontWeight: '500', cursor: 'pointer', transition: 'all 0.3s ease' }}>Analysis</button>
-          <button onClick={() => setActiveTab('detailed')} style={{ flex: 1, padding: '12px 20px', border: 'none', backgroundColor: activeTab === 'detailed' ? '#007bff' : 'transparent', color: activeTab === 'detailed' ? 'white' : '#495057', borderRadius: '8px', fontWeight: '500', cursor: 'pointer', transition: 'all 0.3s ease' }}>Results</button>
+          <button onClick={() => setActiveTab('detailed')} style={{ flex: 1, padding: '12px 20px', border: 'none', backgroundColor: activeTab === 'detailed' ? '#007bff' : 'transparent', color: activeTab === 'detailed' ? 'white' : '#495057', borderRadius: '8px', fontWeight: '500', cursor: 'pointer', transition: 'all 0.3s ease' }}>Review Answers</button>
         </div>
 
         {activeTab === 'analysis' && (

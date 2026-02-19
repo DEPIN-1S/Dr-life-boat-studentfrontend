@@ -9,6 +9,8 @@ import Studyplan from '../StudyPlan/Studyplan'
 import axios from 'axios'
 import { toast } from 'react-toastify'
 
+import { API_BASE_URL } from '../../utils/apiConfig'
+
 const CourseCard = () => {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -29,7 +31,7 @@ const CourseCard = () => {
 
     try {
       const response = await axios({
-        url: import.meta.env.VITE_BASE_URL + '/drlifeboat/student/course/data',
+        url: API_BASE_URL + '/drlifeboat/student/course/data',
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -50,6 +52,7 @@ const CourseCard = () => {
       toast.error('Failed to load course')
     }
   }
+
   const hashtags = React.useMemo(() => {
     if (!courseDetails?.hashtags) return []
     try {
@@ -58,6 +61,7 @@ const CourseCard = () => {
       return []
     }
   }, [courseDetails])
+
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -79,9 +83,9 @@ const CourseCard = () => {
       <div className="course-banner">
         <img
           className="course-description-image"
-          src={`${import.meta.env.VITE_BASE_URL}/${courseDetails?.image}`}
+          src={`${API_BASE_URL}/${courseDetails?.image}`}
           alt={courseDetails.heading}
-          // onError={(e) => { e.target.src = '/default-course.jpg' }}
+        // onError={(e) => { e.target.src = '/default-course.jpg' }}
         />
         <div className="banner-overlay">
           <div className="badge-container">
@@ -104,7 +108,7 @@ const CourseCard = () => {
         <h3 className="course-title-overlay">{courseDetails.heading}</h3>
 
         <div className="price-section">
-          <span className="price">₹{courseDetails.fee || 0}</span>
+          {/* <span className="price">₹{courseDetails.fee || 0}</span> */}
 
           <button
             className={activeTab === 'overview' ? 'active-tab' : ''}

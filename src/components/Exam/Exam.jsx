@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { API_BASE_URL } from '../../utils/apiConfig';
 
 const Exam = () => {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ const Exam = () => {
         setError('Authentication token missing. Please log in again.');
         return;
       }
-      const baseUrl = import.meta.env.VITE_BASE_URL || 'https://lunarsenterprises.com:6028';
+      const baseUrl = API_BASE_URL;
       try {
         setLoading(true);
         setError(null);
@@ -62,7 +63,7 @@ const Exam = () => {
       return;
     }
 
-    const baseUrl = import.meta.env.VITE_BASE_URL || 'https://lunarsenterprises.com:6028';
+    const baseUrl = API_BASE_URL;
     axios({
       url: `${baseUrl}/drlifeboat/student/exam/submission/list`,
       method: 'GET',
@@ -117,7 +118,7 @@ const Exam = () => {
       });
   };
 
-  const baseUrl = import.meta.env.VITE_BASE_URL || 'https://lunarsenterprises.com:6028';
+  const baseUrl = API_BASE_URL;
 
   if (loading) {
     return (
@@ -167,9 +168,9 @@ const Exam = () => {
   }
 
   return (
-  
 
- <div className="container-fluid" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh', padding: '1rem 1rem 2rem' }}>
+
+    <div className="container-fluid" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh', padding: '1rem 1rem 2rem' }}>
       <div className="row justify-content-center">
         <div className="col-12 col-lg-11 col-xl-10">
           {/* Header Section */}

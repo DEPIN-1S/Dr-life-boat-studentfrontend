@@ -131,10 +131,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from '../../utils/apiConfig';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClipboardQuestion } from "@fortawesome/free-solid-svg-icons";
 
-const API_BASE = import.meta.env.VITE_BASE_URL || "https://lunarsenterprises.com:6028";
+const API_BASE = API_BASE_URL;
 
 const QuizList = () => {
   const navigate = useNavigate();

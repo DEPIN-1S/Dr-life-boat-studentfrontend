@@ -1,0 +1,238 @@
+.otp-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Under Process Styles */
+.under-process-icon {
+    width: 80px;
+    height: 80px;
+    color: #28a745;
+    margin-bottom: 20px;
+}
+
+.under-process-heading {
+    color: #fd7e14;
+    /* Orange */
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.sub-heading {
+    font-size: 1.25rem;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.description-text {
+    color: #6c757d;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.info-box {
+    background-color: #fdf2e9;
+    border: 1px solid #fae3d9;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+}
+
+.info-box-text {
+    color: #333;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.info-box-text span {
+    font-weight: 600;
+}
+
+.highlight-red {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.otp-inputs-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.otp-input {
+    width: 50px;
+    height: 60px;
+    font-size: 1.5rem;
+    text-align: center;
+    border: 2px solid #ced4da;
+    border-radius: 8px;
+    transition: border-color 0.3s;
+}
+
+.otp-input:focus {
+    border-color: #198754;
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.1);
+}
+
+.verify-btn {
+    background-color: #198754;
+    /* Green */
+    color: white;
+    border: none;
+    padding: 12px 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 400px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.verify-btn:hover {
+    background-color: #157347;
+}
+
+.verify-btn:disabled {
+    background-color: #a5d6a7;
+    cursor: not-allowed;
+}
+
+/* Success Styles */
+.success-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    /* Align to top */
+    min-height: 100vh;
+    background-color: #f8f9fa;
+    padding-top: 50px;
+}
+
+.success-banner {
+    background-color: #28a745;
+    /* Green */
+    color: white;
+    width: 100%;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+.success-banner-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-left: 20px;
+    /* Adjust for layout */
+}
+
+.close-banner {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    margin-right: 20px;
+}
+
+.success-card {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    max-width: 500px;
+    width: 100%;
+    margin-top: 100px;
+    /* Space from top banner */
+    text-align: center;
+    border: 1px solid #e0e0e0;
+}
+
+.success-card-header {
+    background-color: #8bc34a;
+    /* Light Green */
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: white;
+}
+
+.success-icon-large {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 15px;
+    background-color: white;
+    border-radius: 50%;
+    color: #8bc34a;
+    padding: 15px;
+}
+
+.success-card-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.success-card-body {
+    padding: 30px;
+}
+
+.success-card-message {
+    font-size: 1.2rem;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.brand-text {
+    color: #fd7e14;
+    /* Orange */
+    font-weight: 700;
+}
+
+.note-box {
+    border: 1px solid #ffcc80;
+    /* Light Orange Border */
+    padding: 10px;
+    margin: 20px 0;
+    font-size: 0.9rem;
+    color: #555;
+    text-align: left;
+}
+
+.login-btn-success {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s;
+}
+
+.login-btn-success:hover {
+    background-color: #218838;
+}

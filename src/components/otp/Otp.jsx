@@ -3,6 +3,8 @@ import axios from 'axios'
 import { Container, Form, Button, Alert } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 
+import { API_BASE_URL } from '../../utils/apiConfig'
+
 const ForgotPassword = () => {
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
@@ -16,7 +18,7 @@ const ForgotPassword = () => {
 
     try {
       const response = await axios.post(
-        import.meta.env.VITE_BASE_URL + '/drlifeboat/student/forgot-password',
+        API_BASE_URL + '/drlifeboat/student/forgot-password',
         { email },
         { headers: { 'Content-Type': 'application/json' } },
       )

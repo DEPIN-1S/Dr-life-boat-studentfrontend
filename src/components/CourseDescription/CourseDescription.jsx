@@ -8,6 +8,8 @@ import { toast } from 'react-toastify'
 import { useParams } from 'react-router-dom'
 import VideoPlayer from '../VideoPlayer'
 
+import { API_BASE_URL } from '../../utils/apiConfig'
+
 const CourseCard = () => {
   const params = useParams()
 
@@ -23,7 +25,7 @@ const CourseCard = () => {
     let Bearer = sessionStorage.getItem('token')
 
     axios({
-      url: import.meta.env.VITE_BASE_URL + '/drlifeboat/student/course/data',
+      url: API_BASE_URL + '/drlifeboat/student/course/data',
       headers: {
         Accept: 'application/json',
         Authorization: `Bearer ${Bearer}`,
@@ -44,6 +46,7 @@ const CourseCard = () => {
         console.log(err, 'error inside couseData')
       })
   }
+
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -119,7 +122,7 @@ const CourseCard = () => {
           ) : (
             <img
               className="course-description-image"
-              src={`${import.meta.env.VITE_BASE_URL}/${courseDetails?.image}`}
+              src={`${API_BASE_URL}/${courseDetails?.image}`}
               alt="Course"
             />
           )}

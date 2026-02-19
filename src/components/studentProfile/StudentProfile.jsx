@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Camera, User, Mail, Phone, Globe, Save, X, Edit2 } from 'lucide-react';
+import { API_BASE_URL } from '../../utils/apiConfig';
 
 export default function StudentProfile() {
   const [profile, setProfile] = useState(null);
@@ -12,6 +13,9 @@ export default function StudentProfile() {
     email: '',
     phone: '',
     country: '',
+    state: '',
+    district: '',
+    location: '',
     image: null
   });
   console.log("Rendering StudentProfile component");
@@ -24,7 +28,7 @@ export default function StudentProfile() {
       setLoading(true);
       const token = sessionStorage.getItem('token') || localStorage.getItem('token');
 
-      const response = await fetch('https://lunarsenterprises.com:6028/drlifeboat/student/profile', {
+      const response = await fetch(`${API_BASE_URL}/drlifeboat/student/profile`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -52,6 +56,9 @@ export default function StudentProfile() {
           email: user.s_email || '',
           phone: user.s_phone || '',
           country: user.s_country || '',
+          state: user.s_state || '',
+          district: user.s_district || '',
+          location: user.s_location || '',
           image: null
         });
 
@@ -91,11 +98,14 @@ export default function StudentProfile() {
       formDataToSend.append('email', formData.email);
       formDataToSend.append('phone', formData.phone);
       formDataToSend.append('country', formData.country);
+      formDataToSend.append('state', formData.state);
+      formDataToSend.append('district', formData.district);
+      formDataToSend.append('location', formData.location);
       if (formData.image) formDataToSend.append('image', formData.image);
 
       const token = sessionStorage.getItem('token') || localStorage.getItem('token');
 
-      const response = await fetch('https://lunarsenterprises.com:6028/drlifeboat/student/profile/edit', {
+      const response = await fetch(`${API_BASE_URL}/drlifeboat/student/profile/edit`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -128,6 +138,9 @@ export default function StudentProfile() {
         email: profile.s_email || '',
         phone: profile.s_phone || '',
         country: profile.s_country || '',
+        state: profile.s_state || '',
+        district: profile.s_district || '',
+        location: profile.s_location || '',
         image: null
       });
     }
@@ -146,7 +159,7 @@ export default function StudentProfile() {
       <div className="max-w-4xl mx-auto">
         {/* Header Card */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-6">
-         <div className="h-32 bg-gradient-to-r from-[#1c7c63] via-cyan-500 to-sky-400"></div>
+          <div className="h-32 bg-gradient-to-r from-[#1c7c63] via-cyan-500 to-sky-400"></div>
 
           <div className="px-6 pb-6">
             <div className="flex flex-col sm:flex-row items-center sm:items-end -mt-16 sm:-mt-12">
@@ -156,7 +169,7 @@ export default function StudentProfile() {
                     <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                   ) : profile?.s_profile_pic ? (
                     <img
-                      src={`https://lunarsenterprises.com:6028${profile.s_profile_pic}`}
+                      src={`${API_BASE_URL}${profile.s_profile_pic}`}
                       alt={profile.s_name}
                       className="w-full h-full object-cover"
                       onError={(e) => {
@@ -190,7 +203,7 @@ export default function StudentProfile() {
                 {!isEditing ? (
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="inline-flex items-center px-6 py-2.5  hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors shadow-md hover:shadow-lg" style={{backgroundColor:"#1c7c63"}}
+                    className="inline-flex items-center px-6 py-2.5  hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors shadow-md hover:shadow-lg" style={{ backgroundColor: "#1c7c63" }}
                   >
                     <Edit2 className="w-4 h-4 mr-2" />
                     Edit Profile
@@ -285,6 +298,51 @@ export default function StudentProfile() {
                     disabled={!isEditing}
                     className="pl-10 w-full py-3 border rounded-lg disabled:bg-gray-50"
                     placeholder="Country"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">State</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="state"
+                    value={formData.state}
+                    onChange={handleInputChange}
+                    disabled={!isEditing}
+                    className="pl-10 w-full py-3 border rounded-lg disabled:bg-gray-50"
+                    placeholder="State"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">District</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="district"
+                    value={formData.district}
+                    onChange={handleInputChange}
+                    disabled={!isEditing}
+                    className="pl-10 w-full py-3 border rounded-lg disabled:bg-gray-50"
+                    placeholder="District"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleInputChange}
+                    disabled={!isEditing}
+                    className="pl-10 w-full py-3 border rounded-lg disabled:bg-gray-50"
+                    placeholder="Location"
                   />
                 </div>
               </div>

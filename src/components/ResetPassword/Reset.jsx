@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
 import { Form, Button, Container, Row, Col, InputGroup } from 'react-bootstrap'
 import { FaEye, FaEyeSlash } from 'react-icons/fa'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
+import Swal from 'sweetalert2'
+import { API_BASE_URL } from '../../utils/apiConfig'
 
 const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState('')
@@ -10,47 +12,74 @@ const ResetPassword = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  const navigate = useNavigate() // Hook for navigation
-  const email = 'jaisonroy700@gmail.com' // Replace with dynamic email if needed
+  const navigate = useNavigate()
+  const location = useLocation()
+  const email = location.state?.email || sessionStorage.getItem('resetEmail');
 
   const handleSubmit = async (e) => {
     e.preventDefault()
 
+    if (!email) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Session Expired',
+        text: 'Please start over.',
+        timer: 2000,
+        showConfirmButton: false
+      });
+      navigate('/forgot-password');
+      return;
+    }
+
     if (newPassword !== confirmPassword) {
-      alert('Passwords do not match!')
+      Swal.fire({
+        icon: 'warning',
+        title: 'Mismatch',
+        text: 'Passwords do not match!',
+      });
       return
     }
 
     setLoading(true)
 
-    const requestBody = {
-      email: email,
-      password: newPassword,
-    }
-
     try {
       const response = await fetch(
-        'https://lunarsenterprises.com:6023/gakstechnologies/change-password',
+        `${API_BASE_URL}/drlifeboat/student/reset-password`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(requestBody),
+          body: JSON.stringify({ email, password: newPassword }),
         },
       )
 
       const result = await response.json()
 
       if (result.result === true) {
-        // Fix: Access the correct property
-        alert('Password successfully reset!')
-        navigate('/') // Ensure navigate is properly initialized
+        await Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: 'Password successfully reset!',
+          timer: 2000,
+          showConfirmButton: false
+        });
+        sessionStorage.removeItem('resetEmail');
+        navigate('/login')
       } else {
-        alert(result.message || 'Failed to reset password')
+        Swal.fire({
+          icon: 'error',
+          title: 'Failed',
+          text: result.message || 'Failed to reset password',
+        });
       }
     } catch (error) {
-      alert('An error occurred. Please try again.')
+      console.error(error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'An error occurred. Please try again.',
+      });
     } finally {
       setLoading(false)
     }

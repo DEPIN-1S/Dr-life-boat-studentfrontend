@@ -6,6 +6,8 @@ import './dashboard.css'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
+import { API_BASE_URL } from '../../utils/apiConfig'
+
 const Dashboard = () => {
   const navigate = useNavigate()
   const [courses, setCourses] = useState([])
@@ -19,7 +21,7 @@ const Dashboard = () => {
   const EnrolledcourseList = () => {
     let Bearer = sessionStorage.getItem('token')
     axios({
-      url: import.meta.env.VITE_BASE_URL + '/drlifeboat/student/course/purchased/list',
+      url: API_BASE_URL + '/drlifeboat/student/course/purchased/list',
       headers: {
         Accept: 'application/json',
         Authorization: `Bearer ${Bearer}`,
@@ -41,7 +43,7 @@ const Dashboard = () => {
   const courseList = () => {
     let Bearer = sessionStorage.getItem('token')
     axios({
-      url: import.meta.env.VITE_BASE_URL + '/drlifeboat/student/course/list',
+      url: API_BASE_URL + '/drlifeboat/student/course/list',
       headers: {
         Accept: 'application/json',
         Authorization: `Bearer ${Bearer}`,

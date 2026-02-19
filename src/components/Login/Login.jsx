@@ -4,6 +4,8 @@ import { Eye, EyeOff } from 'lucide-react'
 import './login.css'
 import { useNavigate } from 'react-router-dom'
 
+import { API_BASE_URL } from '../../utils/apiConfig'
+
 export default function Login() {
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
@@ -29,7 +31,7 @@ export default function Login() {
 
     try {
       const response = await axios.post(
-        import.meta.env.VITE_BASE_URL + '/drlifeboat/student/login',
+        API_BASE_URL + '/drlifeboat/student/login',
         { email, password },
         { headers: { 'Content-Type': 'application/json' } },
       )
@@ -96,9 +98,12 @@ export default function Login() {
             {error && <p style={{ color: 'red' }}>{error}</p>}
 
             <div className="login-options">
-              <a style={{ color: '#1c7c63' }} href="#">
+              <span
+                style={{ color: '#1c7c63', cursor: 'pointer', textDecoration: 'underline' }}
+                onClick={() => navigate('/forgot-password')}
+              >
                 Forgot Password?
-              </a>
+              </span>
             </div>
 
             <button className="signin-btn" type="submit">

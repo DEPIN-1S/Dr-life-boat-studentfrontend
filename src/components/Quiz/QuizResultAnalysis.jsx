@@ -1,15 +1,14 @@
 
-
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FaCheck, FaTimes, FaLock, FaChevronLeft, FaChevronRight, FaClock, FaTrophy, FaChartPie, FaArrowLeft, FaHome } from 'react-icons/fa';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, LineChart, Line, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { API_BASE_URL } from '../../utils/apiConfig';
 
-const API_BASE = import.meta.env.VITE_BASE_URL || 'https://lunarsenterprises.com:6028';
-const IMAGE_BASE = 'https://lunarsenterprises.com:6028';
+const API_BASE = API_BASE_URL;
+const IMAGE_BASE = API_BASE_URL;
 
 const QuizResultAnalysis = () => {
   const navigate = useNavigate();
@@ -252,15 +251,14 @@ const QuizResultAnalysis = () => {
                     <button
                       key={i}
                       onClick={() => setCurrentQuestion(i)}
-                      className={`min-w-12 h-12 rounded-lg font-semibold transition-all ${
-                        currentQuestion === i
-                          ? 'bg-blue-600 text-white shadow-md scale-110'
-                          : q.isCorrectAnswer
+                      className={`min-w-12 h-12 rounded-lg font-semibold transition-all ${currentQuestion === i
+                        ? 'bg-blue-600 text-white shadow-md scale-110'
+                        : q.isCorrectAnswer
                           ? 'bg-green-500 text-white hover:bg-green-600'
                           : q.wasAttempted
-                          ? 'bg-red-500 text-white hover:bg-red-600'
-                          : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
-                      }`}
+                            ? 'bg-red-500 text-white hover:bg-red-600'
+                            : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                        }`}
                     >
                       {i + 1}
                     </button>
@@ -272,13 +270,12 @@ const QuizResultAnalysis = () => {
                 <div className="bg-blue-600 p-5 text-white">
                   <div className="flex justify-between items-center">
                     <h3 className="text-xl font-bold">Question {currentQuestion + 1} of {quizDetails.length}</h3>
-                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                      currentQ.isCorrectAnswer ? 'bg-green-500' :
+                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${currentQ.isCorrectAnswer ? 'bg-green-500' :
                       currentQ.wasAttempted ? 'bg-red-500' : 'bg-amber-500'
-                    }`}>
+                      }`}>
                       {currentQ.isCorrectAnswer ? <FaCheck className="text-xl" /> :
-                       currentQ.wasAttempted ? <FaTimes className="text-xl" /> :
-                       <FaLock className="text-xl" />}
+                        currentQ.wasAttempted ? <FaTimes className="text-xl" /> :
+                          <FaLock className="text-xl" />}
                     </div>
                   </div>
                   <p className="text-right mt-3 font-semibold">

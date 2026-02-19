@@ -7,7 +7,9 @@ self.onmessage = (e) => {
             self.postMessage('tick');
         }, 1000);
     } else if (e.data === 'stop') {
-        if (self.timerId) clearInterval(self.timerId);
-        self.timerId = null;
+        if (self.timerId) {
+            clearInterval(self.timerId);
+            self.timerId = null;
+        }
     }
 };

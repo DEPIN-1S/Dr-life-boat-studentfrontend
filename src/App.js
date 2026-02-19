@@ -19,7 +19,7 @@ import StudentProfile from './components/studentProfile/StudentProfile';
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'));
 const Otp = React.lazy(() => import('./components/otp/Otp'));
 const Otpverification = React.lazy(() => import('./components/Otpverification/Otpverification'));
-const Forget = React.lazy(() => import('./components/otp/Otp'));
+const ForgotPassword = React.lazy(() => import('./components/ForgotPassword/ForgotPassword'));
 const ResetPassword = React.lazy(() => import('./components/ResetPassword/Reset'));
 const Register = React.lazy(() => import('./components/Register/Register'));
 const Login = React.lazy(() => import('./components/Login/Login'));
@@ -44,7 +44,7 @@ const AppContent = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/otp" element={<Otp />} />
         <Route path="/otp-verification" element={<Otpverification />} />
-        <Route path="/forget-password" element={<Forget />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/instructions" element={<TestInstructions />} />
         <Route path="/exam-view" element={<ProtectedExamQuestion />} /> {/* Use protected route */}
@@ -56,7 +56,7 @@ const AppContent = () => {
         <Route path="/404" element={<Page404 />} />
         <Route path="/500" element={<Page500 />} />
         <Route path="*" element={<DefaultLayout />} />
-         {/* <Route path="/student/profile" element={<StudentProfile/>} /> */}
+        {/* <Route path="/student/profile" element={<StudentProfile/>} /> */}
       </Routes>
     </Suspense>
   );

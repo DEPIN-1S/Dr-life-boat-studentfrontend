@@ -3,6 +3,8 @@ import './enrolled.css'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
+import { API_BASE_URL } from '../../utils/apiConfig'
+
 function Enrolled() {
   const navigate = useNavigate()
   const [courses, setCourses] = useState([])
@@ -18,7 +20,7 @@ function Enrolled() {
   const EnrolledcourseList = () => {
     let Bearer = sessionStorage.getItem('token')
     axios({
-      url: import.meta.env.VITE_BASE_URL + '/drlifeboat/student/course/purchased/list',
+      url: API_BASE_URL + '/drlifeboat/student/course/purchased/list',
       headers: {
         Accept: 'application/json',
         Authorization: `Bearer ${Bearer}`,
@@ -44,7 +46,7 @@ function Enrolled() {
           <div key={course.cs_id} className="enrolled-card">
             <div className="enrolled-image-container">
               <img
-                src={`${import.meta.env.VITE_BASE_URL}/${course.cs_image}`}
+                src={`${API_BASE_URL}/${course.cs_image}`}
                 alt={course.cs_heading}
                 className="enrolled-image"
               />

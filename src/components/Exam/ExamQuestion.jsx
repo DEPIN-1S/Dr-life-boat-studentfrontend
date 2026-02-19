@@ -7,6 +7,9 @@ import Swal from 'sweetalert2';
 import axios from 'axios';
 import { CSpinner } from '@coreui/react';
 import AdaptiveExam from '../../util/exam'; // updated class filename
+import { useOfflineManager } from '../../hooks/useOfflineManager';
+import { secureStorage } from '../../utils/secureStorage';
+import { API_BASE_URL } from '../../utils/apiConfig';
 
 const ExamQuestion = () => {
   const navigate = useNavigate();
@@ -14,7 +17,8 @@ const ExamQuestion = () => {
   const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
-  const stateExam = location?.state || JSON.parse(localStorage.getItem('currentExam') || '{}');
+  const { safeSubmit, isOnline } = useOfflineManager(`${API_BASE_URL}/drlifeboat/student/exam/question/submit`);
+  const stateExam = location?.state || secureStorage.getItem('currentExam') || {};
   const examId = stateExam?.ex_id;
   const examMinutes = stateExam?.ex_duration || 0;
   const [lockedQuestions, setLockedQuestions] = useState(new Set());
@@ -33,7 +37,7 @@ const ExamQuestion = () => {
   const [allQuestionsData, setAllQuestionsData] = useState([]); // original list of { question_id, difficulty_level }
 
   // BASE URL helper
-  const baseUrl = import.meta.env.VITE_BASE_URL || 'https://lunarsenterprises.com:6028';
+  const baseUrl = API_BASE_URL;
   const token = sessionStorage.getItem('token');
 
   useEffect(() => {
@@ -43,12 +47,13 @@ const ExamQuestion = () => {
     }
 
     // restore saved small state (responses/locked/marked)
-    const savedResponses = localStorage.getItem('examResponses');
-    const savedLocked = localStorage.getItem('lockedQuestions');
-    const savedMarked = localStorage.getItem('markedReview');
-    if (savedResponses) setResponses(JSON.parse(savedResponses));
-    if (savedLocked) setLockedQuestions(new Set(JSON.parse(savedLocked)));
-    if (savedMarked) setMarkedReview(new Set(JSON.parse(savedMarked)));
+    // restore saved small state (responses/locked/marked)
+    const savedResponses = secureStorage.getItem('examResponses');
+    const savedLocked = secureStorage.getItem('lockedQuestions');
+    const savedMarked = secureStorage.getItem('markedReview');
+    if (savedResponses) setResponses(savedResponses);
+    if (savedLocked) setLockedQuestions(new Set(savedLocked));
+    if (savedMarked) setMarkedReview(new Set(savedMarked));
 
     // timer logic (unchanged)
     const EXAM_START_KEY = `examStartTime_${examId}`;
@@ -112,10 +117,10 @@ const ExamQuestion = () => {
     if (!examId) return;
 
     const EXAM_START_KEY = `examStartTime_${examId}`;
-    let examStartTime = parseInt(localStorage.getItem(EXAM_START_KEY) || '0');
+    let examStartTime = parseInt(secureStorage.getItem(EXAM_START_KEY) || '0');
     if (!examStartTime || isNaN(examStartTime)) {
       examStartTime = Date.now();
-      localStorage.setItem(EXAM_START_KEY, examStartTime.toString());
+      secureStorage.setItem(EXAM_START_KEY, examStartTime.toString());
     }
     const totalMs = examMinutes * 60 * 1000;
     const endTime = examStartTime + totalMs;
@@ -123,6 +128,8 @@ const ExamQuestion = () => {
 
     // Calculate initial timeLeft
     const syncTime = () => {
+      if (!window.navigator.onLine) return true; // Freeze timer if offline
+
       const now = Date.now();
       const diff = Math.floor((endTimeRef.current - now) / 1000);
       if (diff <= 0) {
@@ -175,9 +182,9 @@ const ExamQuestion = () => {
       await submitExam(true); // true = isTimeout
 
       // Clean up local data
-      localStorage.removeItem(`adaptive_list_${examId}`);
-      localStorage.removeItem(`adaptive_state_${examId}`);
-      localStorage.removeItem(`examStartTime_${examId}`);
+      secureStorage.removeItem(`adaptive_list_${examId}`);
+      secureStorage.removeItem(`adaptive_state_${examId}`);
+      secureStorage.removeItem(`examStartTime_${examId}`);
       clearExamData();
 
       Swal.fire({
@@ -201,9 +208,9 @@ const ExamQuestion = () => {
 
   // persist simple UI state
   useEffect(() => {
-    localStorage.setItem('examResponses', JSON.stringify(responses));
-    localStorage.setItem('lockedQuestions', JSON.stringify([...lockedQuestions]));
-    localStorage.setItem('markedReview', JSON.stringify([...markedReview]));
+    secureStorage.setItem('examResponses', responses);
+    secureStorage.setItem('lockedQuestions', [...lockedQuestions]);
+    secureStorage.setItem('markedReview', [...markedReview]);
   }, [responses, lockedQuestions, markedReview]);
 
   // --- New: loadAdaptiveState combines reading /student/exam/data and localStorage resume ---
@@ -212,12 +219,12 @@ const ExamQuestion = () => {
       // check saved adaptive state first
       const savedListKey = `adaptive_list_${examId}`;
       const savedStateKey = `adaptive_state_${examId}`;
-      const savedListJson = localStorage.getItem(savedListKey);
-      const savedStateJson = localStorage.getItem(savedStateKey);
+      const savedListJson = secureStorage.getItem(savedListKey);
+      const savedStateJson = secureStorage.getItem(savedStateKey);
 
       let listData;
       if (savedListJson) {
-        listData = JSON.parse(savedListJson);
+        listData = savedListJson;
       } else {
         // fetch /student/exam/data
         const res = await axios({
@@ -234,7 +241,8 @@ const ExamQuestion = () => {
         }
         listData = res.data.data || [];
         // save list
-        localStorage.setItem(savedListKey, JSON.stringify(listData));
+        // save list
+        secureStorage.setItem(savedListKey, listData);
       }
 
       setAllQuestionsData(listData);
@@ -244,7 +252,7 @@ const ExamQuestion = () => {
 
       // If saved adaptive state exists -> resume engine from it
       if (savedStateJson) {
-        const savedState = JSON.parse(savedStateJson);
+        const savedState = savedStateJson;
         const engine = AdaptiveExam.from(listData, savedState);
         setAdaptiveExam(engine);
 
@@ -258,7 +266,7 @@ const ExamQuestion = () => {
           // no currentQuestionId saved, ask engine for next
           const next = engine.getNextQuestion(null);
           if (next) {
-            localStorage.setItem(savedStateKey, JSON.stringify(engine.serialize()));
+            secureStorage.setItem(savedStateKey, engine.serialize());
             fetchQuestionDetails(next.question_id);
             const idx = flatIds.findIndex(id => id === next.question_id);
             if (idx !== -1) setCurrentIndex(idx);
@@ -274,8 +282,9 @@ const ExamQuestion = () => {
         const first = engine.getNextQuestion(null);
         if (first) {
           // save state and list
-          localStorage.setItem(savedListKey, JSON.stringify(listData));
-          localStorage.setItem(savedStateKey, JSON.stringify(engine.serialize()));
+          // save state and list
+          secureStorage.setItem(savedListKey, listData);
+          secureStorage.setItem(savedStateKey, engine.serialize());
           fetchQuestionDetails(first.question_id);
           const idx = flatIds.findIndex(id => id === first.question_id);
           if (idx !== -1) setCurrentIndex(idx);
@@ -404,7 +413,7 @@ const ExamQuestion = () => {
 
         if (nextObj?.question_id) {
           // Save updated engine state
-          localStorage.setItem(`adaptive_state_${examId}`, JSON.stringify(adaptiveExam.serialize()));
+          secureStorage.setItem(`adaptive_state_${examId}`, adaptiveExam.serialize());
 
           // Load next question
           fetchQuestionDetails(nextObj.question_id);
@@ -468,9 +477,9 @@ const ExamQuestion = () => {
         return false;
       }
 
-      const savedAnswerValues = JSON.parse(localStorage.getItem('examAnswerValues') || '{}');
+      const savedAnswerValues = secureStorage.getItem('examAnswerValues') || {};
       savedAnswerValues[questionId] = selectedValues;
-      localStorage.setItem('examAnswerValues', JSON.stringify(savedAnswerValues));
+      secureStorage.setItem('examAnswerValues', savedAnswerValues);
     } catch (err) {
       console.error('Failed to process answer:', err);
       return false;
@@ -486,75 +495,90 @@ const ExamQuestion = () => {
     };
 
     try {
-      const response = await axios({
-        url: `${baseUrl}/drlifeboat/student/exam/question/submit`,
-        method: 'POST',
-        headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
-        data: payload,
-      });
+      // Use useOfflineManager's safeSubmit instead of direct axios
+      const result = await safeSubmit(payload);
 
-      if (response.data?.result) {
-        const isCorrect = response.data.is_correct === true;
+      if (result.success) {
+        // CASE 1: Online & Success
+        if (result.response?.data?.result) {
+          const isCorrect = result.response.data.is_correct === true;
 
-        // Let engine decide next question
-        const nextObj = adaptiveExam.submitAnswer(isCorrect);
+          // Let engine decide next question
+          const nextObj = adaptiveExam.submitAnswer(isCorrect);
 
-        // Save engine state
-        localStorage.setItem(`adaptive_state_${examId}`, JSON.stringify(adaptiveExam.serialize()));
+          // Save engine state
+          secureStorage.setItem(`adaptive_state_${examId}`, adaptiveExam.serialize());
 
-        if (nextObj) {
-          fetchQuestionDetails(nextObj.question_id);
-          const idx = questions.findIndex(q => q === nextObj.question_id);
-          if (idx !== -1) setCurrentIndex(idx);
-        } else {
-          // Exam is complete
-          setShowModal(true);
-        }
-        return true;
-      } else {
-        // Handle known error: already submitted
-        if (response.data?.message?.includes("already submitted")) {
-          console.log("Answer already submitted (server confirmed). Treating as success.");
-          // Still lock it locally
-          setLockedQuestions(prev => new Set([...prev, questionId]));
-          // Optionally re-ask engine for next (in case sync issue)
-          const nextObj = adaptiveExam.getNextQuestion();
           if (nextObj) {
             fetchQuestionDetails(nextObj.question_id);
             const idx = questions.findIndex(q => q === nextObj.question_id);
             if (idx !== -1) setCurrentIndex(idx);
           } else {
+            // Exam is complete
             setShowModal(true);
           }
           return true;
         }
 
-        Swal.fire('Error', response.data?.message || 'Failed to submit answer', 'error');
+        // CASE 2: Offline & Queued (queued: true)
+        else if (result.queued) {
+          console.log("Offline mode: Answer queued.");
+          // For adaptive exams, we CANNOT proceed to the next question because we need 'isCorrect' from server to determine difficulty.
+
+          // Lock the current question to prevent changes
+          setLockedQuestions(prev => new Set([...prev, questionId]));
+
+          // Notify user
+          Swal.fire({
+            icon: 'info',
+            title: 'Saved Offline',
+            text: 'Your answer has been saved securely. Please reconnect to proceed (Adaptive Mode requires internet).',
+            confirmButtonText: 'OK'
+          });
+
+          return true;
+        }
+
+        // CASE 3: Online but Server Error (e.g. "already submitted")
+        else if (result.response?.data?.message?.includes("already submitted")) {
+          console.log("Answer already submitted. Treating as success.");
+          setLockedQuestions(prev => new Set([...prev, questionId]));
+
+          if (adaptiveExam) {
+            const nextObj = adaptiveExam.getNextQuestion();
+            if (nextObj) {
+              fetchQuestionDetails(nextObj.question_id);
+              const idx = questions.findIndex(q => q === nextObj.question_id);
+              if (idx !== -1) setCurrentIndex(idx);
+            } else {
+              setShowModal(true);
+            }
+          } else {
+            // Reload logic if engine missing
+            loadAdaptiveState();
+          }
+          return true;
+        }
+        else {
+          Swal.fire('Error', result.response?.data?.message || 'Failed to submit answer', 'error');
+          return false;
+        }
+      } else {
+        // CASE 4: Critical Local Failure
+        Swal.fire('Error', 'Critical: Could not save answer locally.', 'error');
         return false;
       }
     } catch (err) {
       console.error('Submit error:', err);
-      if (err.response?.data?.message?.includes("already submitted")) {
-        console.log("Caught already submitted error. Recovering gracefully.");
-        setLockedQuestions(prev => new Set([...prev, questionId]));
-        const nextObj = adaptiveExam.getNextQuestion();
-        if (nextObj) {
-          fetchQuestionDetails(nextObj.question_id);
-          const idx = questions.findIndex(q => q === nextObj.question_id);
-          if (idx !== -1) setCurrentIndex(idx);
-        } else {
-          setShowModal(true);
-        }
-        return true;
-      }
-      Swal.fire('Error', 'Network error. Please check connection.', 'error');
+      Swal.fire('Error', 'An unexpected error occurred.', 'error');
       return false;
     }
+
   };
 
   const submitExam = async (isTimeout) => {
     const Bearer = sessionStorage.getItem('token');
-    const baseUrl = import.meta.env.VITE_BASE_URL || 'https://lunarsenterprises.com:6028';
+    const baseUrl = API_BASE_URL;
     const answeredIds = Array.from(lockedQuestions);
     const pendingIds = questions.filter((qId) => !answeredIds.includes(qId));
     const payload = { examId, is_timeout: isTimeout, pending_questions: pendingIds };
@@ -717,16 +741,16 @@ const ExamQuestion = () => {
 
       if (result.success) {
         // Mark this exam as completed locally (optional fallback)
-        const completedExams = JSON.parse(localStorage.getItem('completedExams') || '[]');
+        const completedExams = secureStorage.getItem('completedExams') || [];
         if (!completedExams.includes(examId)) {
           completedExams.push(examId);
-          localStorage.setItem('completedExams', JSON.stringify(completedExams));
+          secureStorage.setItem('completedExams', completedExams);
         }
 
         // Clear ALL adaptive + exam state
-        localStorage.removeItem(`adaptive_list_${examId}`);
-        localStorage.removeItem(`adaptive_state_${examId}`);
-        localStorage.removeItem(`examStartTime_${examId}`);
+        secureStorage.removeItem(`adaptive_list_${examId}`);
+        secureStorage.removeItem(`adaptive_state_${examId}`);
+        secureStorage.removeItem(`examStartTime_${examId}`);
         clearExamData();
 
         Swal.fire({
@@ -755,16 +779,16 @@ const ExamQuestion = () => {
 
 
   const clearExamData = () => {
-    localStorage.removeItem('examResponses');
-    localStorage.removeItem('lockedQuestions');
-    localStorage.removeItem('markedReview');
-    localStorage.removeItem('examEndTime');
-    localStorage.removeItem(`examStartTime_${examId}`);
-    localStorage.removeItem('currentExamId');
-    localStorage.removeItem('examAnswerValues');
-    localStorage.removeItem('currentExam');
-    localStorage.removeItem(`adaptive_list_${examId}`);
-    localStorage.removeItem(`adaptive_state_${examId}`);
+    secureStorage.removeItem('examResponses');
+    secureStorage.removeItem('lockedQuestions');
+    secureStorage.removeItem('markedReview');
+    secureStorage.removeItem('examEndTime');
+    secureStorage.removeItem(`examStartTime_${examId}`);
+    secureStorage.removeItem('currentExamId');
+    secureStorage.removeItem('examAnswerValues');
+    secureStorage.removeItem('currentExam');
+    secureStorage.removeItem(`adaptive_list_${examId}`);
+    secureStorage.removeItem(`adaptive_state_${examId}`);
   };
 
   // rest of rendering logic remains mostly same (I preserved your UI, timer, palette etc.)
@@ -821,6 +845,33 @@ const ExamQuestion = () => {
 
   return (
     <>
+      {/* Offline Overlay */}
+      {!isOnline && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          backgroundColor: 'rgba(0, 0, 0, 0.85)',
+          zIndex: 9999,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          color: 'white',
+          textAlign: 'center'
+        }}>
+          <h1 style={{ color: '#ff4444', marginBottom: '20px' }}>⚠️ CONNECTION LOST</h1>
+          <h3>Exam Paused</h3>
+          <p>Your timer has been stopped to preserve your time.</p>
+          <p>Please check your internet connection.</p>
+          <div className="spinner-border text-light" role="status" style={{ marginTop: '20px' }}>
+            <span className="sr-only">Reconnecting...</span>
+          </div>
+        </div>
+      )}
+
       <div className="exam-container">
         <div className="exam-header">
           <div className="exam-timer">Remaining Time: {formatTime(timeLeft)}</div>
