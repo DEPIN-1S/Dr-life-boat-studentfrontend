@@ -54,12 +54,12 @@ function Courses() {
             <div className="course-info">
               <h3 className="course-title">{course.cs_heading}</h3>
               <p className="course-author">{course?.author}</p>
-              <div className="course-rating">
+              {/* <div className="course-rating">
                 <span className="rating">{course?.rating || '0.0'}</span>
                 <span className="stars">★★★★★</span>
                 <span className="review-count">({course?.reviews || 0})</span>
-              </div>
-              <div className="course-price">₹{course.cs_fee}</div>
+              </div> */}
+              {/* <div className="course-price">₹{course.cs_fee}</div> */}
             </div>
             <div className="course-buttons">
               <button className="buy-now-button">Buy Now</button>

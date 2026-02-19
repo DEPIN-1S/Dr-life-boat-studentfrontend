@@ -2,8 +2,8 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import axios from 'axios';
-import { API_BASE_URL } from '../../utils/apiConfig';
+// import axios from 'axios'; // Removed as apiClient is used
+import { API_BASE_URL, apiClient } from '../../utils/apiConfig';
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import DOMPurify from "dompurify";
 import { secureStorage } from "../../utils/secureStorage";
@@ -155,16 +155,15 @@ export default function QuizQuestion() {
   useEffect(() => {
     const checkSubmission = async () => {
       if (!effectiveQuizId) return;
-      const token = STORAGE.getItem("token");
+      const token = sessionStorage.getItem("token") || localStorage.getItem("token");
       if (!token) {
         setFetchError("Authentication required.");
         setLoading(false);
         return;
       }
       try {
-        const subRes = await axios.get(
-          `${API_BASE}/drlifeboat/student/quiz/submission/list`,
-          { headers: { Authorization: `Bearer ${token}` } }
+        const subRes = await apiClient.get(
+          '/drlifeboat/student/quiz/submission/list'
         );
         if (subRes.data.result) {
           const submission = (subRes.data.data || []).find(s => s.qz_id === Number(effectiveQuizId));
@@ -208,14 +207,13 @@ export default function QuizQuestion() {
 
   const fetchQuizQuestions = async () => {
     if (!quizId) return;
-    const token = STORAGE.getItem("token");
+    // const token = STORAGE.getItem("token"); // Removed as apiClient handles this
     try {
       setLoading(true);
       setFetchError(null);
-      const res = await axios.post(
-        `${API_BASE}/drlifeboat/student/quiz/data`,
-        { quiz_id: Number(effectiveQuizId) },
-        { headers: { Authorization: `Bearer ${token}` } }
+      const res = await apiClient.post(
+        '/drlifeboat/student/quiz/data',
+        { quiz_id: Number(effectiveQuizId) }
       );
       if (res.data.result && res.data.data?.length > 0) {
         setQuestions(res.data.data);
@@ -231,13 +229,12 @@ export default function QuizQuestion() {
 
   const fetchQuestion = async (qId) => {
     if (!qId) return;
-    const token = STORAGE.getItem("token");
+    // const token = STORAGE.getItem("token"); // Removed as apiClient handles this
     try {
       setQuestionLoading(true);
-      const res = await axios.post(
-        `${API_BASE}/drlifeboat/student/quiz/question`,
-        { quiz_id: Number(effectiveQuizId), question_id: qId },
-        { headers: { Authorization: `Bearer ${token}` } }
+      const res = await apiClient.post(
+        '/drlifeboat/student/quiz/question',
+        { quiz_id: Number(effectiveQuizId), question_id: qId }
       );
 
       if (res.data.result) {
@@ -348,7 +345,7 @@ export default function QuizQuestion() {
 
 
   const submitWholeQuiz = async (isTimeout = false) => {
-    const token = STORAGE.getItem("token");
+    // const token = STORAGE.getItem("token"); // Removed as apiClient handles this
 
     if (!effectiveQuizId || effectiveQuizId.trim() === "") {
       Swal.fire({ icon: "error", title: "Session Expired", text: "Please start again." });
@@ -364,10 +361,9 @@ export default function QuizQuestion() {
     }
 
     try {
-      const res = await axios.post(
-        `${API_BASE}/drlifeboat/student/quiz/submit`,
-        { quiz_id: Number(effectiveQuizId) },
-        { headers: { Authorization: `Bearer ${token}` } }
+      const res = await apiClient.post(
+        '/drlifeboat/student/quiz/submit',
+        { quiz_id: Number(effectiveQuizId) }
       );
 
       if (res.data.result) {
@@ -590,7 +586,7 @@ export default function QuizQuestion() {
       </div>
 
       <div className="border-b border-gray-300 pt-1">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+        <div className="w-11/12 max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {timerActive && (
               <svg width="48" height="48" viewBox="0 0 48 48" className="flex-shrink-0">
@@ -614,7 +610,7 @@ export default function QuizQuestion() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+      <div className="w-11/12 max-w-7xl mx-auto px-4 sm:px-6 py-8" style={{ fontFamily: "'Segoe UI', sans-serif" }}>
         {questionLoading ? (
           <div className="flex justify-center py-12">
             <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-600 border-t-transparent"></div>
@@ -622,11 +618,11 @@ export default function QuizQuestion() {
         ) : (
           <>
             <div className="mb-8">
-              <h2 className="text-gray-900 text-base font-normal mb-6">
+              <div className="text-gray-900 mb-6 text-justify" style={{ fontSize: '16px', lineHeight: '1.4' }}>
                 {currentQ.q_question.map((line, i) => (
-                  <div key={i} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(line || "") }} />
+                  <p key={i} className="mb-2" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(line || "") }} />
                 ))}
-              </h2>
+              </div>
               {currentQ.images?.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                   {currentQ.images.map((p, i) => (
@@ -634,7 +630,7 @@ export default function QuizQuestion() {
                       key={i}
                       src={`${API_BASE}/${p}`}
                       alt={`Question image ${i + 1}`}
-                      className="w-full rounded border border-gray-300 object-contain max-h-64"
+                      className="max-w-sm w-full rounded border border-gray-300 object-contain max-h-64 mx-auto block"
                       onError={(e) => { e.target.style.display = 'none'; }}
                     />
                   ))}
@@ -652,12 +648,13 @@ export default function QuizQuestion() {
                   <div
                     key={i}
                     onClick={() => !isLocked && handleOption(i)}
-                    className={`relative border-2 rounded-lg p-4 cursor-pointer transition-all
+                    className={`relative border rounded-md cursor-pointer transition-all
                       ${isLocked && isOptionCorrect ? "border-green-500 bg-green-50"
                         : isLocked && isOptionSelectedWrong ? "border-red-500 bg-red-50"
                           : checked ? "border-blue-600 bg-blue-50"
                             : "border-gray-300 hover:border-gray-400"}
                       ${isLocked ? "cursor-not-allowed opacity-90" : ""}`}
+                    style={{ padding: '8px 12px', marginBottom: '10px' }}
                   >
                     <div className="flex items-start gap-3">
                       <div className={`flex-shrink-0 w-8 h-8 rounded border-2 flex items-center justify-center text-sm font-semibold

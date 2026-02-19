@@ -36,7 +36,7 @@ export const useOfflineManager = (syncUrl) => {
         if (!navigator.onLine || isSyncing) return;
 
         setIsSyncing(true);
-        const token = sessionStorage.getItem('token');
+        const token = sessionStorage.getItem('token') || localStorage.getItem('token');
 
         try {
             const queue = await dbService.getSyncQueue(); // Helper we built
@@ -72,7 +72,7 @@ export const useOfflineManager = (syncUrl) => {
      * Safe Submit: Tries network first, falls back to queue
      */
     const safeSubmit = async (payload) => {
-        const token = sessionStorage.getItem('token');
+        const token = sessionStorage.getItem('token') || localStorage.getItem('token');
 
         if (isOnline) {
             try {
