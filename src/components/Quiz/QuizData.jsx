@@ -208,17 +208,23 @@ function QuizCard({ quiz, index, onOpen }) {
   const statusText =
     total > 0 ? `${completed}/${total} completed` : (quiz.assigned?.qs_created_at ? "Assigned" : "");
 
+  // Use the is_submitted flag from the normalized data
+  const isSubmitted = quiz.is_submitted;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, delay: index * 0.02 }}
     >
-      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
+      <div
+        className="overflow-hidden rounded-2xl border border-gray-200 bg-white hover:shadow-md transition-shadow cursor-pointer"
+        onClick={onOpen}
+      >
         <div className="p-4">
           <div className="flex items-center gap-4">
             {/* Icon / Image */}
-            <div className="shrink-0">
+            <div className="shrink-0 relative">
               {quiz.q_file ? (
                 <img
                   src={fileUrl(quiz.q_file)}
@@ -226,7 +232,10 @@ function QuizCard({ quiz, index, onOpen }) {
                   className="h-12 w-12 rounded-xl object-cover border"
                 />
               ) : (
-                <div className="h-12 w-12 rounded-xl border grid place-items-center text-lg">🎯</div>
+                <div className="h-12 w-12 rounded-xl border grid place-items-center text-lg bg-gray-50">🎯</div>
+              )}
+              {isSubmitted && (
+                <div className="absolute -top-1 -right-1 h-3 w-3 bg-green-500 rounded-full border-2 border-white"></div>
               )}
             </div>
 
@@ -237,15 +246,26 @@ function QuizCard({ quiz, index, onOpen }) {
               </div>
 
               <div className="mt-2 flex items-center gap-3">
-                <Progress value={pct} />
-                <span className="text-xs text-gray-500 whitespace-nowrap">{statusText}</span>
+                {isSubmitted ? (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-green-100 text-green-700">
+                    Completed
+                  </span>
+                ) : (
+                  <>
+                    <Progress value={pct} />
+                    <span className="text-xs text-gray-500 whitespace-nowrap">{statusText}</span>
+                  </>
+                )}
               </div>
             </div>
 
             {/* CTA */}
             <button
-              onClick={onOpen}
-              className="h-9 w-9 grid place-items-center rounded-full hover:bg-gray-100"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpen();
+              }}
+              className="h-9 w-9 grid place-items-center rounded-full hover:bg-gray-100 text-gray-400"
               aria-label="Open quiz"
             >
               <ChevronRight className="h-5 w-5" />

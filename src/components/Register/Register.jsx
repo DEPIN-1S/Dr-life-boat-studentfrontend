@@ -31,22 +31,47 @@ export default function Register() {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
+  // Validation Helper
+  const validateStep = (step) => {
+    // Step 1: Personal Details
+    if (step === 1) {
+      if (!formData.name.trim()) return 'Name is required';
+
+      if (!formData.email.trim()) return 'Email is required';
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) return 'Invalid email format';
+
+      if (!formData.phone.trim()) return 'Phone number is required';
+      const phoneRegex = /^[0-9]{10}$/; // Assumes 10 digit phone number
+      if (!phoneRegex.test(formData.phone.replace(/\D/g, ''))) return 'Phone number must be 10 digits';
+    }
+
+    // Step 2: Password Details
+    if (step === 2) {
+      if (!formData.password) return 'Password is required';
+      if (formData.password.length < 6) return 'Password must be at least 6 characters';
+
+      if (!formData.confirmPassword) return 'Confirm Password is required';
+      if (formData.password !== formData.confirmPassword) return 'Passwords do not match';
+    }
+
+    // Step 3: Location Details (Final Submission Check)
+    if (step === 3) {
+      if (!formData.country.trim()) return 'Country is required';
+      if (!formData.state.trim()) return 'State is required';
+      if (!formData.district.trim()) return 'District is required';
+      if (!formData.location.trim()) return 'Location is required';
+    }
+
+    return null; // No errors
+  };
+
   const handleNext = () => {
     setError('')
-    if (currentStep === 1) {
-      if (!formData.name || !formData.email || !formData.phone) {
-        setError('Please fill in all fields')
-        return
-      }
-    } else if (currentStep === 2) {
-      if (!formData.password || !formData.confirmPassword) {
-        setError('Please fill in all password fields')
-        return
-      }
-      if (formData.password !== formData.confirmPassword) {
-        setError('Passwords do not match')
-        return
-      }
+    const validationError = validateStep(currentStep);
+    if (validationError) {
+      setError(validationError);
+      return;
     }
     setCurrentStep((prev) => prev + 1)
   }
@@ -74,6 +99,14 @@ export default function Register() {
     e.preventDefault()
     setError('')
 
+    // Validate current step (Step 3) before submitting
+    const validationError = validateStep(3);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    // Final safety check for passwords
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match')
       return

@@ -197,7 +197,8 @@ const QuizResultAnalysis = () => {
                   <FaTrophy className="text-3xl" />
                 </div>
                 <p className="text-sm font-medium mb-2 opacity-90">Your Score</p>
-                <p className="text-6xl font-bold mb-3">{percentage}</p>
+                {/* <p className="text-6xl font-bold mb-3">{percentage}</p> */}
+                <p className="text-6xl font-bold mb-3">{userScore}</p>
                 <p className="text-lg font-semibold">{userScore} / {totalScore} marks</p>
               </div>
 

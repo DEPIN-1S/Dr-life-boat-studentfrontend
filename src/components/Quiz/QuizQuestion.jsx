@@ -131,14 +131,22 @@ export default function QuizQuestion() {
   }, [quizId]);
 
 
-  useEffect(() => {
-    if (quizId) {
-      secureStorage.setItem("quiz_currentQuizId", quizId);
-    }
-  }, [quizId]);
+
 
   useEffect(() => {
     if (paramQuizId) {
+      const storedId = secureStorage.getItem("quiz_currentQuizId");
+      if (storedId && storedId !== paramQuizId) {
+        // Clear previous session data if IDs don't match
+        console.log("Quiz ID mismatch (Stored: " + storedId + ", New: " + paramQuizId + "). Clearing session.");
+        ["responses", "locked", "results", "currentIdx"].forEach(key => secureStorage.removeItem(`quiz_${key}`));
+
+        // Also reset state immediately to prevent stale data usage
+        setResponses({});
+        setLocked(new Set());
+        setResults({});
+        setCurrentIdx(0);
+      }
       setQuizId(paramQuizId);
       secureStorage.setItem("quiz_currentQuizId", paramQuizId);
     } else {
@@ -321,11 +329,22 @@ export default function QuizQuestion() {
           const isFullyCorrect = correctOptions.length === userSelectedIndices.length &&
             correctOptions.every(idx => userSelectedIndices.includes(idx));
 
+          // Extract explanation from response (assuming it's at the top level or within data)
+          const explanation = data.q_answer_explanation || data.explanation || "";
+
+          // Helper to process images similar to QuizResultAnalysis
+          const rawExplImages = data.q_explanation_image || [];
+          const explanationImages = Array.isArray(rawExplImages)
+            ? rawExplImages.map(img => img.qi_file).filter(Boolean)
+            : (typeof rawExplImages === 'string' ? rawExplImages.split(',').filter(Boolean) : []);
+
           setResults(p => ({
             ...p,
             [qId]: {
               status: isFullyCorrect ? "correct" : "incorrect",
-              correctIndices: correctOptions
+              correctIndices: correctOptions,
+              explanation: explanation,
+              explanationImages: explanationImages
             }
           }));
           return true;
@@ -378,16 +397,42 @@ export default function QuizQuestion() {
 
         navigate("/quiz");
       } else {
-        Swal.fire({
-          icon: "error",
-          title: "Submission Failed",
-          text: res.data.message || "Unknown error"
-        });
+        const msg = res.data.message || "Unknown error";
+        if (msg.toLowerCase().includes("already submitted") || msg.toLowerCase().includes("duplicate")) {
+          clearQuizData();
+          await Swal.fire({
+            icon: "info",
+            title: "Already Submitted",
+            text: "This quiz has already been submitted.",
+            timer: 2000,
+            showConfirmButton: false
+          });
+          navigate("/quiz");
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Submission Failed",
+            text: msg
+          });
+        }
       }
     } catch (e) {
       console.error("Final submission error:", e);
       const msg = e?.response?.data?.message || "Network error";
-      Swal.fire({ icon: "error", title: "Error", text: msg });
+
+      if (msg.toLowerCase().includes("already submitted") || msg.toLowerCase().includes("duplicate")) {
+        clearQuizData();
+        await Swal.fire({
+          icon: "info",
+          title: "Already Submitted",
+          text: "This quiz has previously been submitted.",
+          timer: 2000,
+          showConfirmButton: false
+        });
+        navigate("/quiz");
+      } else {
+        Swal.fire({ icon: "error", title: "Error", text: msg });
+      }
     }
   };
 
@@ -671,6 +716,43 @@ export default function QuizQuestion() {
               })}
             </div>
 
+
+
+            {/* Explanation Section */}
+            {isLocked && questionResult?.explanation && (
+              <div className="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-200 animate-fade-in">
+                <h3 className="text-lg font-bold text-blue-900 mb-3 flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                  Explanation
+                </h3>
+                <div
+                  className="prose max-w-none text-gray-800"
+                  dangerouslySetInnerHTML={{
+                    __html: DOMPurify.sanitize(
+                      typeof questionResult.explanation === 'string'
+                        ? questionResult.explanation
+                        : (Array.isArray(questionResult.explanation) ? questionResult.explanation.join('<br/>') : '')
+                    )
+                  }}
+                />
+
+                {questionResult.explanationImages && questionResult.explanationImages.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                    {questionResult.explanationImages.map((img, idx) => (
+                      <img
+                        key={idx}
+                        src={`${API_BASE}/${img.replace(/^\/+/, "")}`}
+                        alt="Explanation"
+                        className="rounded-lg shadow-sm w-full object-contain max-h-80 bg-white border"
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="flex items-center justify-between">
               <button
                 onClick={goBack}
@@ -694,6 +776,6 @@ export default function QuizQuestion() {
           </>
         )}
       </div>
-    </div>
+    </div >
   );
 }
