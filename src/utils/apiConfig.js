@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const API_BASE_URL = import.meta.env.VITE_BASE_URL || 'https://lunarsenterprises.com:6028';
+export const API_BASE_URL = import.meta.env.VITE_BASE_URL || 'https://api.drlifeboat.com';
 
 export const apiClient = axios.create({
     baseURL: API_BASE_URL,
