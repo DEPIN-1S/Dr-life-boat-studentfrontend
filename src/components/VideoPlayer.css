@@ -1,5 +1,7 @@
 
-
+/* ============================
+   Video Player Container
+   ============================ */
 .video-player-container,
 .video-js {
   width: 100% !important;
@@ -13,53 +15,143 @@
   background: #000 !important;
 }
 
-/* Big Play Button - Beautiful & Centered */
+/* ============================
+   Big Play Button
+   ============================ */
 .vjs-big-play-button {
   top: 50% !important;
   left: 50% !important;
   transform: translate(-50%, -50%) !important;
-  width: 90px !important;
-  height: 90px !important;
-  line-height: 90px !important;
+  width: 80px !important;
+  height: 80px !important;
+  line-height: 80px !important;
   border-radius: 50% !important;
-  font-size: 42px !important;
+  font-size: 36px !important;
   background-color: rgba(0, 0, 0, 0.7) !important;
-  border: 4px solid white !important;
-  transition: all 0.2s;
+  border: 3px solid white !important;
+  transition: all 0.2s ease;
 }
 
 .vjs-big-play-button:hover {
   background-color: rgba(13, 110, 253, 0.9) !important;
   border-color: white !important;
+  transform: translate(-50%, -50%) scale(1.1) !important;
 }
 
-/* Control Bar */
+/* ============================
+   Control Bar - Larger & Cleaner
+   ============================ */
 .vjs-control-bar {
-  background: linear-gradient(transparent, rgba(0,0,0,0.8)) !important;
-  height: 60px !important;
-  padding: 0 10px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85)) !important;
+  height: 50px !important;
+  padding: 0 8px;
+  display: flex !important;
+  align-items: center !important;
 }
 
-/* Custom Speed Buttons */
-.vjs-speed-btn {
-  background: rgba(255,255,255,0.15) !important;
+.vjs-control-bar .vjs-control {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Make all control buttons bigger on touch devices */
+.vjs-control-bar .vjs-button {
+  width: 44px !important;
+  min-width: 44px !important;
+  height: 44px !important;
+  font-size: 16px !important;
+}
+
+/* ============================
+   Custom Rewind / Forward Buttons
+   ============================ */
+.vjs-custom-rewind,
+.vjs-custom-forward {
+  position: relative;
+  width: 48px !important;
+  min-width: 48px !important;
+  height: 44px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(255,255,255,0.1) !important;
+  border-radius: 8px !important;
+  margin: 0 2px !important;
+  transition: background 0.2s ease;
+}
+
+.vjs-custom-rewind:hover,
+.vjs-custom-forward:hover {
+  background: rgba(255,255,255,0.25) !important;
+}
+
+.vjs-custom-rewind::before {
+  content: "◀10" !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
   color: white !important;
-  border-radius: 6px !important;
-  padding: 0 10px !important;
-  font-weight: bold !important;
-  margin: 0 4px;
-  min-width: 44px;
+  letter-spacing: -0.5px;
 }
 
-.vjs-speed-btn:hover {
-  background: rgba(255,255,255,0.3) !important;
+.vjs-custom-forward::before {
+  content: "10▶" !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: white !important;
+  letter-spacing: -0.5px;
 }
 
-/* Rewind / Forward Icons */
-.vjs-icon-replay-10::before { content: "10s"; font-weight: bold; }
-.vjs-icon-forward-10::before { content: "10s"; font-weight: bold; }
+/* ============================
+   Playback Rate Menu (Built-in)
+   ============================ */
+.vjs-playback-rate .vjs-playback-rate-value {
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  line-height: 44px !important;
+  pointer-events: none;
+}
 
-/* Progress Bar */
+.vjs-playback-rate {
+  width: 48px !important;
+  min-width: 48px !important;
+}
+
+.vjs-playback-rate .vjs-menu {
+  width: 80px !important;
+  left: 50% !important;
+  transform: translateX(-50%);
+}
+
+.vjs-playback-rate .vjs-menu .vjs-menu-content {
+  max-height: 250px !important;
+  background: rgba(0, 0, 0, 0.9) !important;
+  border-radius: 8px !important;
+  padding: 4px 0;
+}
+
+.vjs-playback-rate .vjs-menu .vjs-menu-item {
+  padding: 8px 16px !important;
+  font-size: 14px !important;
+  text-align: center !important;
+}
+
+.vjs-playback-rate .vjs-menu .vjs-menu-item.vjs-selected {
+  background: rgba(13, 110, 253, 0.8) !important;
+  color: white !important;
+}
+
+.vjs-playback-rate .vjs-menu .vjs-menu-item:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* ============================
+   Progress Bar
+   ============================ */
+.vjs-progress-control {
+  height: 44px !important;
+}
+
 .vjs-play-progress {
   background-color: #0d6efd !important;
 }
@@ -68,6 +160,104 @@
   background: rgba(255,255,255,0.3) !important;
 }
 
+.vjs-progress-holder {
+  height: 6px !important;
+}
+
+.vjs-progress-holder:hover {
+  height: 10px !important;
+}
+
+/* ============================
+   Volume
+   ============================ */
 .vjs-volume-level {
   background-color: #0d6efd !important;
+}
+
+/* ============================
+   Fullscreen button
+   ============================ */
+.vjs-fullscreen-control {
+  order: 99;
+}
+
+/* ============================
+   Time Display - Clean
+   ============================ */
+.vjs-current-time,
+.vjs-duration,
+.vjs-time-divider {
+  display: flex !important;
+  align-items: center !important;
+  font-size: 13px !important;
+  padding: 0 3px !important;
+  min-width: auto !important;
+}
+
+/* ============================
+   Mobile Responsive
+   ============================ */
+@media (max-width: 576px) {
+  .vjs-control-bar {
+    height: 46px !important;
+    padding: 0 4px;
+  }
+
+  .vjs-control-bar .vjs-button {
+    width: 38px !important;
+    min-width: 38px !important;
+    height: 38px !important;
+    font-size: 14px !important;
+  }
+
+  .vjs-custom-rewind,
+  .vjs-custom-forward {
+    width: 42px !important;
+    min-width: 42px !important;
+  }
+
+  .vjs-custom-rewind::before,
+  .vjs-custom-forward::before {
+    font-size: 11px !important;
+  }
+
+  .vjs-current-time,
+  .vjs-duration,
+  .vjs-time-divider {
+    font-size: 11px !important;
+  }
+
+  .vjs-playback-rate .vjs-playback-rate-value {
+    font-size: 12px !important;
+  }
+
+  .vjs-big-play-button {
+    width: 64px !important;
+    height: 64px !important;
+    line-height: 64px !important;
+    font-size: 28px !important;
+  }
+
+  .vjs-progress-holder {
+    height: 4px !important;
+  }
+}
+
+/* ============================
+   Hide Download / PiP Controls
+   ============================ */
+video::-webkit-media-controls-enclosure {
+  overflow: hidden;
+}
+
+video::-webkit-media-controls-panel {
+  width: calc(100% + 36px);
+}
+
+/* Disable context menu styling hint */
+.video-player-container {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }

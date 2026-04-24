@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import './CourseDescription.css'
 import Overview from '../Overview/Overview'
 import Lessons from '../Lessons/Lessons'
@@ -16,6 +16,8 @@ const CourseCard = () => {
   const [activeTab, setActiveTab] = useState('overview')
   const [selectedFile, setSelectedFile] = useState(null)
   const [courseDetails, setCourseDetils] = useState([])
+  const [secureUrl, setSecureUrl] = useState(null)
+  const [urlLoading, setUrlLoading] = useState(false)
 
   useEffect(() => {
     CourseData()
@@ -47,6 +49,38 @@ const CourseCard = () => {
       })
   }
 
+  // Fetch pre-signed URL for S3 files
+  const fetchSecureUrl = useCallback(async (s3Key) => {
+    if (!s3Key) return null
+    setUrlLoading(true)
+    try {
+      const token = sessionStorage.getItem('token') || localStorage.getItem('token')
+      const response = await fetch(`${API_BASE_URL}/drlifeboat/student/file/presigned-url`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ s3_key: s3Key })
+      })
+      const data = await response.json()
+      if (data.result && data.url) {
+        setSecureUrl(data.url)
+      }
+    } catch (err) {
+      console.error('Error fetching secure URL:', err)
+    } finally {
+      setUrlLoading(false)
+    }
+  }, [])
+
+  // Fetch secure URL when selectedFile changes
+  useEffect(() => {
+    setSecureUrl(null)
+    if (selectedFile?.s3_key) {
+      fetchSecureUrl(selectedFile.s3_key)
+    }
+  }, [selectedFile, fetchSecureUrl])
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -70,54 +104,68 @@ const CourseCard = () => {
     }
   }, [courseDetails])
 
+  // Resolve the file URL (pre-signed or Google Drive)
+  const getResolvedUrl = () => {
+    if (!selectedFile) return null
+    if (selectedFile.s3_key) return secureUrl
+    return selectedFile.file_link || selectedFile.url || null
+  }
+
+  const resolvedUrl = getResolvedUrl()
+
   return (
     <div className="course-description-container">
       <div className="course-card">
         <div className="media-container">
-          {console.log(selectedFile, 'selectedFile')}
           {selectedFile ? (
-            <div className="course-description-media">
-              {['mp4', 'mov', 'avi', 'mkv', 'video'].some(ext => selectedFile.type.includes(ext)) ? (
-                <VideoPlayer src={selectedFile.url || selectedFile.file || selectedFile.file_link} />
-              ) : selectedFile.type === 'pdf' ? (
-                <iframe
-                  src={`${selectedFile.url || selectedFile.file || selectedFile.file_link}#toolbar=0&navpanes=0&scrollbar=0`}
-
-                  title="PDF Viewer"
-                  className="responsive-iframe"
-                  sandbox="allow-same-origin allow-scripts"
-                  allow="fullscreen"
-                ></iframe>
-              ) : selectedFile.type === 'ppt' || selectedFile.type === 'pptx' ? (
-                <iframe
-                  src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(
-                    selectedFile.url,
-                  )}`}
-                  title="PPT Viewer"
-                  className="responsive-iframe"
-                  sandbox="allow-same-origin allow-scripts"
-                />
-              ) : selectedFile.url.includes('google') ? (
-                <div className="google-drive-container">
-                  <iframe
-                    src={selectedFile.url}
-                    allow="autoplay"
-                    title="Drive Content"
-                    allowFullScreen={true}
-                    className="responsive-iframe"
-                    sandbox="allow-same-origin allow-scripts"
-                  ></iframe>
-
-                  <div className="watermark-logo">
-                    <img
-                      src="/logo1.png"
-                      alt="Company Logo"
-                      className="logo-image"
-                    />
+            <div className="course-description-media" onContextMenu={(e) => e.preventDefault()}>
+              {urlLoading ? (
+                <div className="d-flex align-items-center justify-content-center" style={{ minHeight: '300px' }}>
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
                   </div>
                 </div>
+              ) : resolvedUrl ? (
+                <>
+                  {['mp4', 'mov', 'avi', 'mkv', 'video'].some(ext => selectedFile.type?.includes(ext)) ? (
+                    <VideoPlayer src={resolvedUrl} />
+                  ) : selectedFile.type === 'pdf' || selectedFile.type === 'document' ? (
+                    <iframe
+                      src={`${resolvedUrl}#toolbar=0&navpanes=0&scrollbar=1`}
+                      title="PDF Viewer"
+                      className="responsive-iframe"
+                      sandbox="allow-same-origin allow-scripts"
+                      allow="fullscreen"
+                    ></iframe>
+                  ) : selectedFile.type === 'ppt' || selectedFile.type === 'pptx' ? (
+                    <iframe
+                      src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(resolvedUrl)}`}
+                      title="PPT Viewer"
+                      className="responsive-iframe"
+                      sandbox="allow-same-origin allow-scripts"
+                    />
+                  ) : selectedFile.file_link?.includes('google') ? (
+                    <div className="google-drive-container">
+                      <iframe
+                        src={resolvedUrl}
+                        allow="autoplay"
+                        title="Drive Content"
+                        allowFullScreen={true}
+                        className="responsive-iframe"
+                        sandbox="allow-same-origin allow-scripts"
+                      ></iframe>
+                      <div className="watermark-logo">
+                        <img src="/logo1.png" alt="Company Logo" className="logo-image" />
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="unsupported-file">Unsupported file type</p>
+                  )}
+                </>
               ) : (
-                <p className="unsupported-file">Unsupported file type</p>
+                <div className="d-flex align-items-center justify-content-center" style={{ minHeight: '300px' }}>
+                  <p className="text-muted">Content not available</p>
+                </div>
               )}
             </div>
           ) : (

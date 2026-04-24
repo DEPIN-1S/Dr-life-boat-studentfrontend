@@ -1,8 +1,9 @@
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect, useCallback } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import VideoPlayer from '../VideoPlayer'
-import './LessonPlayer.css' // ← Make sure this file exists
+import { API_BASE_URL } from '../../utils/apiConfig'
+import './LessonPlayer.css'
 
 const LessonPlayer = () => {
   const { state } = useLocation()
@@ -15,12 +16,88 @@ const LessonPlayer = () => {
   const [selectedFile, setSelectedFile] = useState(state?.selected || allFiles[0])
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [secureUrl, setSecureUrl] = useState(null)
+  const [pdfBlobUrl, setPdfBlobUrl] = useState(null)
+  const [urlLoading, setUrlLoading] = useState(false)
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedModule, setSelectedModule] = useState('all')
   const [selectedTopic, setSelectedTopic] = useState('all')
   const [selectedType, setSelectedType] = useState('all')
+
+  /**
+   * Fetch a pre-signed URL from the backend.
+   * The backend verifies the JWT token before generating the URL.
+   */
+  const fetchSecureUrl = useCallback(async (s3Key) => {
+    if (!s3Key) return null
+    setUrlLoading(true)
+    try {
+      const token = sessionStorage.getItem('token') || localStorage.getItem('token')
+      const response = await fetch(`${API_BASE_URL}/drlifeboat/student/file/presigned-url`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ s3_key: s3Key })
+      })
+      const data = await response.json()
+      if (data.result && data.url) {
+        setSecureUrl(data.url)
+
+        // For PDFs, fetch as blob to avoid Chrome cross-origin iframe block
+        const isPdf = s3Key.toLowerCase().endsWith('.pdf')
+        if (isPdf) {
+          try {
+            const pdfResponse = await fetch(data.url)
+            const blob = await pdfResponse.blob()
+            const blobUrl = URL.createObjectURL(blob)
+            setPdfBlobUrl(blobUrl)
+          } catch (blobErr) {
+            console.error('Failed to fetch PDF blob:', blobErr)
+            setPdfBlobUrl(null)
+          }
+        }
+
+        return data.url
+      } else {
+        console.error('Failed to get secure URL:', data.message)
+        return null
+      }
+    } catch (err) {
+      console.error('Error fetching secure URL:', err)
+      return null
+    } finally {
+      setUrlLoading(false)
+    }
+  }, [])
+
+  // Fetch secure URL whenever selectedFile changes
+  useEffect(() => {
+    setSecureUrl(null)
+    // Revoke previous blob URL to avoid memory leaks
+    if (pdfBlobUrl) {
+      URL.revokeObjectURL(pdfBlobUrl)
+      setPdfBlobUrl(null)
+    }
+    const file = selectedFile
+    if (!file) return
+
+    // If file has an s3_key, fetch a pre-signed URL
+    if (file.s3_key) {
+      fetchSecureUrl(file.s3_key)
+    }
+    // If it's a Google Drive link, we use it directly (no S3 involved)
+  }, [selectedFile, fetchSecureUrl])
+
+  // Cleanup blob URL on unmount
+  useEffect(() => {
+    return () => {
+      if (pdfBlobUrl) URL.revokeObjectURL(pdfBlobUrl)
+    }
+  }, [pdfBlobUrl])
 
   if (!selectedFile || allFiles.length === 0) {
     return (
@@ -36,8 +113,6 @@ const LessonPlayer = () => {
     const m2 = link.match(/[?&]id=([a-zA-Z0-9-_]+)/)
     return m1 ? m1[1] : m2 ? m2[1] : null
   }
-
-  const fileId = getFileId(selectedFile.file_link || selectedFile.url)
 
   const topicOptions = useMemo(() => {
     if (selectedModule === 'all') return []
@@ -56,7 +131,7 @@ const LessonPlayer = () => {
       if (searchQuery && !file.name.toLowerCase().includes(searchQuery.toLowerCase())) return false
 
       if (selectedType !== 'all') {
-        const isVideo = file.type?.toLowerCase().includes('video') || file.file_link?.includes('.mp4')
+        const isVideo = file.type?.toLowerCase().includes('video') || file.s3_key?.includes('.mp4')
         if (selectedType === 'pdf' && isVideo) return false
         if (selectedType === 'video' && !isVideo) return false
       }
@@ -95,47 +170,81 @@ const LessonPlayer = () => {
   }, [allFiles, searchQuery, selectedModule, selectedTopic, selectedType, courseModules])
 
   const renderViewer = () => {
-    const { name, type, file_link, file } = selectedFile
+    const { name, type, file_link, s3_key } = selectedFile
 
-    const fileId = getFileId(file_link || selectedFile.url || file)
-
+    const fileId = getFileId(file_link)
     const isGoogleDrive = file_link?.includes('drive.google.com') && fileId
-    const isDirectPdf = (type === 'pdf' || (file_link || file || selectedFile.url)?.toLowerCase().endsWith('.pdf'))
-    const finalUrl = fileId ? (isGoogleDrive ? `https://drive.google.com/file/d/${fileId}/preview` : `https://drive.google.com/uc?export=download&id=${fileId}`) : (file_link || file || selectedFile.url)
+    const isDirectPdf = (type === 'pdf' || type === 'document' || s3_key?.toLowerCase().endsWith('.pdf'))
 
-    if (isGoogleDrive || isDirectPdf) {
+    // If we're still loading the pre-signed URL, show spinner
+    if (s3_key && urlLoading) {
       return (
-        <div className="d-flex flex-column bg-white rounded shadow-sm overflow-hidden h-100">
+        <div className="d-flex flex-column align-items-center justify-content-center h-100 bg-white rounded shadow-sm" style={{ minHeight: '60vh' }}>
+          <div className="spinner-border text-primary mb-3" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+          <p className="text-muted">Loading secure content...</p>
+        </div>
+      )
+    }
+
+    // For S3 files, use the pre-signed URL
+    const resolvedUrl = s3_key ? secureUrl : (isGoogleDrive ? `https://drive.google.com/file/d/${fileId}/preview` : file_link)
+
+    if (!resolvedUrl) {
+      return (
+        <div className="d-flex flex-column align-items-center justify-content-center h-100 bg-white rounded shadow-sm" style={{ minHeight: '60vh' }}>
+          <i className="fas fa-lock text-muted mb-3" style={{ fontSize: '3rem' }}></i>
+          <p className="text-muted">Content not available</p>
+        </div>
+      )
+    }
+
+    // PDF / Google Drive viewer
+    if (isGoogleDrive || isDirectPdf) {
+      // For S3 pre-signed URLs, use the Blob URL to bypass Chrome cross-origin blocks
+      let pdfSrc = isGoogleDrive
+        ? resolvedUrl
+        : (pdfBlobUrl || resolvedUrl);
+        
+      // If it's a direct PDF, append parameters to hide the sidebar and toolbar for a clean view
+      if (isDirectPdf && !isGoogleDrive && pdfSrc) {
+        pdfSrc = `${pdfSrc}#toolbar=0&navpanes=0&view=FitH`;
+      }
+
+      return (
+        <div className="d-flex flex-column bg-white rounded shadow-sm overflow-hidden h-100 no-download-container" style={{ position: 'relative' }}>
           <div className="p-3 bg-light border-bottom">
             <h6 className="mb-0 fw-bold text-truncate">{name}</h6>
           </div>
           {loading && (
-            <div className="position-absolute top-50 start-50 translate-middle z-10">
+            <div className="position-absolute top-50 start-50 translate-middle" style={{ zIndex: 10 }}>
               <div className="spinner-border text-primary" role="status">
                 <span className="visually-hidden">Loading...</span>
               </div>
             </div>
           )}
           <iframe
-            src={isDirectPdf ? `${finalUrl}#toolbar=0` : finalUrl}
+            src={pdfSrc}
             title={name}
             className="w-100 flex-grow-1 border-0"
             onLoad={() => setLoading(false)}
             allowFullScreen
           />
+          {/* Overlay to prevent right-click download on PDF */}
+          <div className="pdf-download-blocker" onContextMenu={(e) => e.preventDefault()}></div>
         </div>
       )
     }
 
-    const videoUrl = finalUrl
-
+    // Video viewer
     return (
       <div className="bg-black rounded overflow-hidden shadow-sm h-100 d-flex flex-column">
         <div className="p-3 bg-light border-bottom">
           <h6 className="mb-0 fw-bold text-truncate">{name}</h6>
         </div>
         <div className="flex-grow-1 position-relative">
-          <VideoPlayer src={videoUrl} title={name} />
+          <VideoPlayer src={resolvedUrl} title={name} />
         </div>
       </div>
     )
@@ -242,7 +351,7 @@ const LessonPlayer = () => {
                   <div className="d-flex align-items-center gap-3">
                     <i
                       className={`fs-4 ${
-                        file.type?.toLowerCase().includes('video') || file.file_link?.includes('.mp4')
+                        file.type?.toLowerCase().includes('video') || file.s3_key?.includes('.mp4')
                           ? 'fas fa-play-circle text-success'
                           : 'fas fa-file-pdf text-danger'
                       }`}
@@ -316,7 +425,7 @@ const LessonPlayer = () => {
                   <div className="d-flex align-items-center gap-3">
                     <i
                       className={`fs-5 ${
-                        file.type?.includes('video') || file.file_link?.includes('.mp4')
+                        file.type?.includes('video') || file.s3_key?.includes('.mp4')
                           ? 'fas fa-play-circle text-success'
                           : 'fas fa-file-pdf text-danger'
                       }`}

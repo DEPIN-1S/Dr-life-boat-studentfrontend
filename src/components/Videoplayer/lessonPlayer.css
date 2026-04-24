@@ -140,6 +140,35 @@
   background: white;
 }
 
+/* ============================
+   No Download / PDF Protection
+   ============================ */
+
+/* Block download overlay for PDFs */
+.no-download-container {
+  position: relative;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Transparent overlay at the top of PDF iframe to block toolbar interactions */
+.pdf-download-blocker {
+  position: absolute;
+  top: 52px; /* below the title bar */
+  left: 0;
+  right: 0;
+  height: 40px;
+  z-index: 20;
+  background: transparent;
+  pointer-events: auto;
+}
+
+/* Hide iframe-level download prompts where possible */
+.no-download-container iframe {
+  pointer-events: auto;
+}
+
 /* Responsive Adjustments */
 @media (max-width: 576px) {
   .mobile-sidebar {
