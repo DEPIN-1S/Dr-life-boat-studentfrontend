@@ -48,20 +48,7 @@ const LessonPlayer = () => {
       if (data.result && data.url) {
         setSecureUrl(data.url)
 
-        // For PDFs, fetch as blob to avoid Chrome cross-origin iframe block
-        const isPdf = s3Key.toLowerCase().endsWith('.pdf')
-        if (isPdf) {
-          // Quickly check if the file is accessible using HEAD (doesn't download the file)
-          try {
-            const response = await fetch(data.url, { method: 'HEAD' });
-            if (!response.ok) throw new Error("File not found");
-            setLoadError(null);
-          } catch (err) {
-            console.error("PDF accessibility check failed:", err);
-            setLoadError("This document is currently unavailable.");
-          }
-        }
-
+        setLoadError(null);
         return data.url
       } else {
         console.error('Failed to get secure URL:', data.message)
