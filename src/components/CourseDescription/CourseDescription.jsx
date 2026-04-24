@@ -77,11 +77,12 @@ const CourseCard = () => {
           {console.log(selectedFile, 'selectedFile')}
           {selectedFile ? (
             <div className="course-description-media">
-              {selectedFile.type.includes('mp4', 'mov', 'avi', 'mkv') ? (
-                <VideoPlayer videoSources={selectedFile.url} />
+              {['mp4', 'mov', 'avi', 'mkv', 'video'].some(ext => selectedFile.type.includes(ext)) ? (
+                <VideoPlayer src={selectedFile.url || selectedFile.file || selectedFile.file_link} />
               ) : selectedFile.type === 'pdf' ? (
                 <iframe
-                  src={`${selectedFile.url}#toolbar=0&navpanes=0&scrollbar=0`}
+                  src={`${selectedFile.url || selectedFile.file || selectedFile.file_link}#toolbar=0&navpanes=0&scrollbar=0`}
+
                   title="PDF Viewer"
                   className="responsive-iframe"
                   sandbox="allow-same-origin allow-scripts"

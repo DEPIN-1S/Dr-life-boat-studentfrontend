@@ -11,7 +11,25 @@ const VideoPlayer = ({ src, title }) => {
   const playerRef = useRef(null)
 
   useEffect(() => {
-    if (!videoRef.current) return
+    if (!videoRef.current || !src) return
+
+    // Determine MIME type based on extension
+    const getMimetype = (url) => {
+      console.log("VideoPlayer: Loading URL:", url);
+      if (typeof url !== 'string') return 'video/mp4'
+      const cleanUrl = url.split('?')[0].toLowerCase()
+      if (cleanUrl.endsWith('.m3u8')) return 'application/x-mpegURL'
+      if (cleanUrl.endsWith('.webm')) return 'video/webm'
+      if (cleanUrl.endsWith('.ogg')) return 'video/ogg'
+      if (cleanUrl.endsWith('.mov')) return 'video/quicktime'
+      if (cleanUrl.endsWith('.mkv')) return 'video/x-matroska'
+      if (cleanUrl.endsWith('.avi')) return 'video/x-msvideo'
+      if (cleanUrl.endsWith('.wmv')) return 'video/x-ms-wmv'
+      return 'video/mp4'
+    }
+
+    const type = getMimetype(src)
+    console.log(`VideoPlayer: Loading ${type} from ${src}`)
 
     const player = videojs(videoRef.current, {
       controls: true,
@@ -19,8 +37,13 @@ const VideoPlayer = ({ src, title }) => {
       fluid: true,
       autoplay: false,
       preload: 'metadata',
-      sources: [{ src, type: 'video/mp4' }],
-      html5: { vhs: { overrideNative: true } },
+      sources: [{ src, type }],
+      // Only use VHS/HLS override if it's actually an HLS stream
+      html5: { 
+        vhs: { 
+          overrideNative: type === 'application/x-mpegURL' 
+        } 
+      },
       controlBar: {
         children: [
           'playToggle',
@@ -29,6 +52,7 @@ const VideoPlayer = ({ src, title }) => {
           'timeDivider',
           'durationDisplay',
           'progressControl',
+          'qualitySelector', // Add quality selector if HLS
           'fullscreenToggle'
         ]
       }
@@ -36,16 +60,37 @@ const VideoPlayer = ({ src, title }) => {
 
     playerRef.current = player
 
+    // Error handling
+    player.on('error', () => {
+      const error = player.error()
+      console.error('VideoJS Error:', error.code, error.message)
+    })
+
+    // Initialize plugins if available
+    if (player.qualityLevels) {
+      player.qualityLevels()
+    }
+    if (player.httpSourceSelector) {
+      player.httpSourceSelector()
+    }
+
     // Custom Buttons
     const addButton = (name, text, icon, callback, position) => {
-      const Button = videojs.getComponent('Button')
-      const btn = videojs.extend(Button, {
-        constructor: function() { Button.apply(this, arguments); this.controlText(text); },
-        handleClick: callback,
-        buildCSSClass: () => `vjs-control vjs-button ${icon}`
-      })
-      videojs.registerComponent(name, btn)
-      player.getChild('controlBar').addChild(name, {}, position)
+      const Button = videojs.getComponent('Button');
+      class CustomButton extends Button {
+        constructor(player, options) {
+          super(player, options);
+          this.controlText(text);
+        }
+        handleClick() {
+          callback();
+        }
+        buildCSSClass() {
+          return `vjs-control vjs-button ${icon}`;
+        }
+      }
+      videojs.registerComponent(name, CustomButton);
+      player.getChild('controlBar').addChild(name, {}, position);
     }
 
     addButton('Rewind10', 'Rewind 10s', 'vjs-icon-replay-10', () => {
@@ -69,7 +114,7 @@ const VideoPlayer = ({ src, title }) => {
   }, [src])
 
   return (
-    <div data-vjs-player className="video-player-container">
+    <div data-vjs-player className="video-player-container h-100">
       <video
         ref={videoRef}
         className="video-js vjs-default-skin vjs-big-play-centered"

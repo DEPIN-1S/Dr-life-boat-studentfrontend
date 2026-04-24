@@ -95,9 +95,15 @@ const LessonPlayer = () => {
   }, [allFiles, searchQuery, selectedModule, selectedTopic, selectedType, courseModules])
 
   const renderViewer = () => {
-    const { name, type, file_link } = selectedFile
+    const { name, type, file_link, file } = selectedFile
 
-    if ((type === 'pdf' || file_link?.includes('drive.google.com')) && fileId) {
+    const fileId = getFileId(file_link || selectedFile.url || file)
+
+    const isGoogleDrive = file_link?.includes('drive.google.com') && fileId
+    const isDirectPdf = (type === 'pdf' || (file_link || file || selectedFile.url)?.toLowerCase().endsWith('.pdf'))
+    const finalUrl = fileId ? (isGoogleDrive ? `https://drive.google.com/file/d/${fileId}/preview` : `https://drive.google.com/uc?export=download&id=${fileId}`) : (file_link || file || selectedFile.url)
+
+    if (isGoogleDrive || isDirectPdf) {
       return (
         <div className="d-flex flex-column bg-white rounded shadow-sm overflow-hidden h-100">
           <div className="p-3 bg-light border-bottom">
@@ -111,19 +117,17 @@ const LessonPlayer = () => {
             </div>
           )}
           <iframe
-            src={`https://drive.google.com/file/d/${fileId}/preview`}
+            src={isDirectPdf ? `${finalUrl}#toolbar=0` : finalUrl}
             title={name}
             className="w-100 flex-grow-1 border-0"
             onLoad={() => setLoading(false)}
-            sandbox="allow-scripts allow-same-origin allow-popups allow-modals"
+            allowFullScreen
           />
         </div>
       )
     }
 
-    const videoUrl = fileId
-      ? `https://drive.google.com/uc?export=download&id=${fileId}`
-      : file_link
+    const videoUrl = finalUrl
 
     return (
       <div className="bg-black rounded overflow-hidden shadow-sm h-100 d-flex flex-column">
