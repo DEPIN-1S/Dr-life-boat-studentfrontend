@@ -19,6 +19,7 @@ const LessonPlayer = () => {
   const [secureUrl, setSecureUrl] = useState(null)
   const [pdfBlobUrl, setPdfBlobUrl] = useState(null)
   const [urlLoading, setUrlLoading] = useState(false)
+  const [loadError, setLoadError] = useState(null)
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('')
@@ -50,14 +51,14 @@ const LessonPlayer = () => {
         // For PDFs, fetch as blob to avoid Chrome cross-origin iframe block
         const isPdf = s3Key.toLowerCase().endsWith('.pdf')
         if (isPdf) {
+          // Quickly check if the file is accessible using HEAD (doesn't download the file)
           try {
-            const pdfResponse = await fetch(data.url)
-            const blob = await pdfResponse.blob()
-            const blobUrl = URL.createObjectURL(blob)
-            setPdfBlobUrl(blobUrl)
-          } catch (blobErr) {
-            console.error('Failed to fetch PDF blob:', blobErr)
-            setPdfBlobUrl(null)
+            const response = await fetch(data.url, { method: 'HEAD' });
+            if (!response.ok) throw new Error("File not found");
+            setLoadError(null);
+          } catch (err) {
+            console.error("PDF accessibility check failed:", err);
+            setLoadError("This document is currently unavailable.");
           }
         }
 
@@ -77,6 +78,7 @@ const LessonPlayer = () => {
   // Fetch secure URL whenever selectedFile changes
   useEffect(() => {
     setSecureUrl(null)
+    setLoadError(null)
     // Revoke previous blob URL to avoid memory leaks
     if (pdfBlobUrl) {
       URL.revokeObjectURL(pdfBlobUrl)
@@ -202,10 +204,7 @@ const LessonPlayer = () => {
 
     // PDF / Google Drive viewer
     if (isGoogleDrive || isDirectPdf) {
-      // For S3 pre-signed URLs, use the Blob URL to bypass Chrome cross-origin blocks
-      let pdfSrc = isGoogleDrive
-        ? resolvedUrl
-        : (pdfBlobUrl || resolvedUrl);
+      let pdfSrc = isGoogleDrive ? resolvedUrl : secureUrl;
         
       // If it's a direct PDF, append parameters to hide the sidebar and toolbar for a clean view
       if (isDirectPdf && !isGoogleDrive && pdfSrc) {
@@ -217,20 +216,32 @@ const LessonPlayer = () => {
           <div className="p-3 bg-light border-bottom">
             <h6 className="mb-0 fw-bold text-truncate">{name}</h6>
           </div>
-          {loading && (
+          {loading && !loadError && (
             <div className="position-absolute top-50 start-50 translate-middle" style={{ zIndex: 10 }}>
               <div className="spinner-border text-primary" role="status">
                 <span className="visually-hidden">Loading...</span>
               </div>
             </div>
           )}
-          <iframe
-            src={pdfSrc}
-            title={name}
-            className="w-100 flex-grow-1 border-0"
-            onLoad={() => setLoading(false)}
-            allowFullScreen
-          />
+          
+          {loadError ? (
+            <div className="d-flex flex-column align-items-center justify-content-center flex-grow-1 p-5 text-center">
+              <i className="fas fa-exclamation-circle text-danger mb-3" style={{ fontSize: '3rem' }}></i>
+              <h5 className="text-danger">Failed to load document</h5>
+              <p className="text-muted small">{loadError}</p>
+              <button className="btn btn-sm btn-outline-primary mt-3" onClick={() => fetchSecureUrl(s3_key)}>
+                Retry
+              </button>
+            </div>
+          ) : (
+            <iframe
+              src={pdfSrc}
+              title={name}
+              className="w-100 flex-grow-1 border-0"
+              onLoad={() => setLoading(false)}
+              allowFullScreen
+            />
+          )}
           {/* Overlay to prevent right-click download on PDF */}
           <div className="pdf-download-blocker" onContextMenu={(e) => e.preventDefault()}></div>
         </div>
