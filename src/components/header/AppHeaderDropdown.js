@@ -7,6 +7,7 @@ import {
   CAvatar,
 } from '@coreui/react';
 import { API_BASE_URL } from '../../utils/apiConfig';
+import { getImageUrl } from '../../utils/imageUrl';
 import { useNavigate } from 'react-router-dom';
 
 const API_BASE = API_BASE_URL;
@@ -39,7 +40,7 @@ const AppHeaderDropdown = () => {
 
 
           const fullImageUrl = user.s_profile_pic
-            ? `${API_BASE}${user.s_profile_pic}`
+            ? getImageUrl(user.s_profile_pic)
             : null;
 
           setUserImage(fullImageUrl);

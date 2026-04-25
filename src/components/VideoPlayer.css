@@ -50,17 +50,16 @@
 }
 
 .vjs-control-bar .vjs-control {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Make all control buttons bigger on touch devices */
+/* Make control buttons bigger on touch devices without forcing overflow */
 .vjs-control-bar .vjs-button {
-  width: 44px !important;
-  min-width: 44px !important;
-  height: 44px !important;
-  font-size: 16px !important;
+  width: auto;
+  min-width: 40px;
+  height: 100%;
 }
 
 /* ============================
@@ -113,8 +112,8 @@
 }
 
 .vjs-playback-rate {
-  width: 48px !important;
-  min-width: 48px !important;
+  width: 44px;
+  min-width: 44px;
 }
 
 .vjs-playback-rate .vjs-menu {
@@ -205,10 +204,8 @@
   }
 
   .vjs-control-bar .vjs-button {
-    width: 38px !important;
-    min-width: 38px !important;
-    height: 38px !important;
-    font-size: 14px !important;
+    min-width: 32px;
+    font-size: 14px;
   }
 
   .vjs-custom-rewind,
@@ -244,16 +241,7 @@
   }
 }
 
-/* ============================
-   Hide Download / PiP Controls
-   ============================ */
-video::-webkit-media-controls-enclosure {
-  overflow: hidden;
-}
-
-video::-webkit-media-controls-panel {
-  width: calc(100% + 36px);
-}
+/* Removed hacky media-controls-panel width to restore native fullscreen button on mobile */
 
 /* Disable context menu styling hint */
 .video-player-container {

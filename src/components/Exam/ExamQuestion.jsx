@@ -10,6 +10,7 @@ import AdaptiveExam from '../../util/exam'; // updated class filename
 import { useOfflineManager } from '../../hooks/useOfflineManager';
 import { secureStorage } from '../../utils/secureStorage';
 import { API_BASE_URL } from '../../utils/apiConfig';
+import { getImageUrl } from '../../utils/imageUrl';
 
 const ExamQuestion = () => {
   const navigate = useNavigate();
@@ -894,7 +895,7 @@ const ExamQuestion = () => {
                 <div className="image-panel">
                   <div className="image-watermark-inside">www.drlifeboat.com</div>
                   {questionImages.map((imgPath, idx) => (
-                    <img key={idx} src={`${baseUrl}${imgPath}`} alt={`Exam Question ${idx + 1}`} style={{ maxWidth: '100%', height: 'auto', marginBottom: '10px' }} />
+                    <img key={idx} src={getImageUrl(imgPath)} alt={`Exam Question ${idx + 1}`} style={{ maxWidth: '100%', height: 'auto', marginBottom: '10px' }} />
                   ))}
                 </div>
               )}
@@ -960,7 +961,7 @@ const ExamQuestion = () => {
                           {hasOptionImage && (
                             <div className="option-image-container">
                               <img
-                                src={`${baseUrl}${opt.qo_image}`}
+                                src={getImageUrl(opt.qo_image)}
                                 alt={`Option ${String.fromCharCode(65 + idx)}`}
                                 className="option-image"
                                 onError={(e) => { e.target.style.display = 'none'; }}

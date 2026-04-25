@@ -5,6 +5,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, LineChart, Line, XAx
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { API_BASE_URL } from '../../utils/apiConfig';
+import { getImageUrl } from '../../utils/imageUrl';
 
 const Results = () => {
   const navigate = useNavigate();
@@ -701,7 +702,7 @@ const Results = () => {
                 <div style={{ marginBottom: '15px' }}>
                   <h4 style={{ color: '#495057', marginBottom: '8px', fontSize: '16px' }}>Question Images:</h4>
                   {questionImages.map((imgPath, idx) => (
-                    <img key={idx} src={`${baseurl}${imgPath}`} alt={`Question Image ${idx + 1}`} style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', marginBottom: '8px' }} />
+                    <img key={idx} src={getImageUrl(imgPath)} alt={`Question Image ${idx + 1}`} style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', marginBottom: '8px' }} />
                   ))}
                 </div>
               )}
@@ -766,7 +767,7 @@ const Results = () => {
                         </div>
                       </div>
                       {optionImage && (
-                        <img src={`${baseurl}${optionImage}`} alt={`Option ${String.fromCharCode(65 + idx)} Image`} style={{ maxWidth: '100%', height: 'auto', borderRadius: '4px', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }} />
+                        <img src={getImageUrl(optionImage)} alt={`Option ${String.fromCharCode(65 + idx)} Image`} style={{ maxWidth: '100%', height: 'auto', borderRadius: '4px', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }} />
                       )}
                     </div>
                   );
@@ -791,7 +792,7 @@ const Results = () => {
                       <div style={{ marginTop: '10px' }}>
                         <h5 style={{ color: '#4c63d2', marginBottom: '8px' }}>Explanation Images:</h5>
                         {explanationImages.map((imgPath, idx) => (
-                          <img key={idx} src={`${baseurl}${imgPath}`} alt={`Explanation Image ${idx + 1}`} style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', marginBottom: '8px' }} />
+                          <img key={idx} src={getImageUrl(imgPath)} alt={`Explanation Image ${idx + 1}`} style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', marginBottom: '8px' }} />
                         ))}
                       </div>
                     )}
@@ -800,7 +801,7 @@ const Results = () => {
                     <div style={{ marginTop: '10px', padding: '15px', backgroundColor: '#fff3cd', borderRadius: '8px', borderLeft: '4px solid #ffc107' }}>
                       <h5 style={{ color: '#856404', marginBottom: '8px' }}>Rule Out Images:</h5>
                       {ruleoutImages.map((imgPath, idx) => (
-                        <img key={idx} src={`${baseurl}${imgPath}`} alt={`Rule Out Image ${idx + 1}`} style={{ maxWidth: '100%', height: 'auto', borderRadius: '4px', boxShadow: '0 1px 4px rgba(0,0,0,0.1)', marginBottom: '5px' }} />
+                        <img key={idx} src={getImageUrl(imgPath)} alt={`Rule Out Image ${idx + 1}`} style={{ maxWidth: '100%', height: 'auto', borderRadius: '4px', boxShadow: '0 1px 4px rgba(0,0,0,0.1)', marginBottom: '5px' }} />
                       ))}
                     </div>
                   )}

@@ -4,6 +4,7 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import Swal from 'sweetalert2';
 // import axios from 'axios'; // Removed as apiClient is used
 import { API_BASE_URL, apiClient } from '../../utils/apiConfig';
+import { getImageUrl } from '../../utils/imageUrl';
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import DOMPurify from "dompurify";
 import { secureStorage } from "../../utils/secureStorage";
@@ -673,7 +674,7 @@ export default function QuizQuestion() {
                   {currentQ.images.map((p, i) => (
                     <img
                       key={i}
-                      src={`${API_BASE}/${p}`}
+                      src={getImageUrl(p)}
                       alt={`Question image ${i + 1}`}
                       className="max-w-sm w-full rounded border border-gray-300 object-contain max-h-64 mx-auto block"
                       onError={(e) => { e.target.style.display = 'none'; }}
@@ -743,7 +744,7 @@ export default function QuizQuestion() {
                     {questionResult.explanationImages.map((img, idx) => (
                       <img
                         key={idx}
-                        src={`${API_BASE}/${img.replace(/^\/+/, "")}`}
+                        src={getImageUrl(img)}
                         alt="Explanation"
                         className="rounded-lg shadow-sm w-full object-contain max-h-80 bg-white border"
                       />

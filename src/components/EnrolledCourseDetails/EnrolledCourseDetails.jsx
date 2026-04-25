@@ -10,6 +10,7 @@ import axios from 'axios'
 import { toast } from 'react-toastify'
 
 import { API_BASE_URL } from '../../utils/apiConfig'
+import { getImageUrl } from '../../utils/imageUrl'
 
 const CourseCard = () => {
   const { id } = useParams()
@@ -83,7 +84,7 @@ const CourseCard = () => {
       <div className="course-banner">
         <img
           className="course-description-image"
-          src={`${API_BASE_URL}/${courseDetails?.image}`}
+          src={getImageUrl(courseDetails?.image)}
           alt={courseDetails.heading}
         // onError={(e) => { e.target.src = '/default-course.jpg' }}
         />

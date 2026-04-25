@@ -6,9 +6,9 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, LineChart, Line, XAx
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { API_BASE_URL } from '../../utils/apiConfig';
+import { getImageUrl } from '../../utils/imageUrl';
 
 const API_BASE = API_BASE_URL;
-const IMAGE_BASE = API_BASE_URL;
 
 const QuizResultAnalysis = () => {
   const navigate = useNavigate();
@@ -292,7 +292,7 @@ const QuizResultAnalysis = () => {
                   {currentQ.questionImages.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {currentQ.questionImages.map((img, i) => (
-                        <img key={i} src={`${IMAGE_BASE}${img}`} alt="Question" className="rounded-lg shadow-md w-full object-contain max-h-96" onError={(e) => e.target.style.display = 'none'} />
+                        <img key={i} src={getImageUrl(img)} alt="Question" className="rounded-lg shadow-md w-full object-contain max-h-96" onError={(e) => e.target.style.display = 'none'} />
                       ))}
                     </div>
                   )}
@@ -328,7 +328,7 @@ const QuizResultAnalysis = () => {
                             <div className="flex-1">
                               <p className="text-gray-800 font-medium">{opt.text}</p>
                               {opt.image && (
-                                <img src={`${IMAGE_BASE}${opt.image}`} alt="Option" className="mt-3 rounded-lg shadow-sm max-h-64 object-contain" />
+                                <img src={getImageUrl(opt.image)} alt="Option" className="mt-3 rounded-lg shadow-sm max-h-64 object-contain" />
                               )}
                             </div>
                             {badge}
@@ -353,7 +353,7 @@ const QuizResultAnalysis = () => {
                       {currentQ.explanationImages.length > 0 && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                           {currentQ.explanationImages.map((img, i) => (
-                            <img key={i} src={`${IMAGE_BASE}${img}`} alt="Explanation" className="rounded-lg shadow-md w-full object-contain max-h-96" />
+                            <img key={i} src={getImageUrl(img)} alt="Explanation" className="rounded-lg shadow-md w-full object-contain max-h-96" />
                           ))}
                         </div>
                       )}

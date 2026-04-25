@@ -4,6 +4,7 @@ import './courses.css'
 import axios from 'axios'
 
 import { API_BASE_URL } from '../../utils/apiConfig'
+import { getImageUrl } from '../../utils/imageUrl'
 
 function Courses() {
   const navigate = useNavigate()
@@ -46,7 +47,7 @@ function Courses() {
           <div key={course.cs_id} className="course-card">
             <div className="course-image-container">
               <img
-                src={`${API_BASE_URL}/${course.cs_image}`}
+                src={getImageUrl(course.cs_image)}
                 alt={course.cs_heading}
                 className="course-image"
               />

@@ -31,7 +31,7 @@ const VideoPlayer = ({ src, title }) => {
     const player = videojs(videoRef.current, {
       controls: true,
       responsive: true,
-      fluid: true,
+      fill: true,
       autoplay: false,
       preload: 'auto',
       playbackRates: [0.5, 0.75, 1, 1.25, 1.5, 2, 3],

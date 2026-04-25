@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
 import { API_BASE_URL } from '../../utils/apiConfig'
+import { getImageUrl } from '../../utils/imageUrl'
 
 function Enrolled() {
   const navigate = useNavigate()
@@ -46,7 +47,7 @@ function Enrolled() {
           <div key={course.cs_id} className="enrolled-card">
             <div className="enrolled-image-container">
               <img
-                src={`${API_BASE_URL}/${course.cs_image}`}
+                src={getImageUrl(course.cs_image)}
                 alt={course.cs_heading}
                 className="enrolled-image"
               />

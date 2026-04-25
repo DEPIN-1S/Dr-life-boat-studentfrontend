@@ -1,9 +1,14 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { Document, Page, pdfjs } from 'react-pdf'
+import 'react-pdf/dist/Page/AnnotationLayer.css'
+import 'react-pdf/dist/Page/TextLayer.css'
 import VideoPlayer from '../VideoPlayer'
 import { API_BASE_URL } from '../../utils/apiConfig'
 import './LessonPlayer.css'
+
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 const LessonPlayer = () => {
   const { state } = useLocation()
@@ -20,6 +25,24 @@ const LessonPlayer = () => {
   const [pdfBlobUrl, setPdfBlobUrl] = useState(null)
   const [urlLoading, setUrlLoading] = useState(false)
   const [loadError, setLoadError] = useState(null)
+  const [numPages, setNumPages] = useState(null)
+  const [containerWidth, setContainerWidth] = useState(null)
+  const resizeObserverRef = React.useRef(null)
+
+  const onRefChange = useCallback(node => {
+    if (resizeObserverRef.current) {
+      resizeObserverRef.current.disconnect();
+    }
+    if (node) {
+      setContainerWidth(node.getBoundingClientRect().width);
+      resizeObserverRef.current = new ResizeObserver(entries => {
+        if (entries[0]) {
+          setContainerWidth(entries[0].contentRect.width);
+        }
+      });
+      resizeObserverRef.current.observe(node);
+    }
+  }, []);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('')
@@ -191,9 +214,10 @@ const LessonPlayer = () => {
 
     // PDF / Google Drive viewer
     if (isGoogleDrive || isDirectPdf) {
+      const isReactPdf = isDirectPdf && !isGoogleDrive && secureUrl;
       let pdfSrc = isGoogleDrive ? resolvedUrl : secureUrl;
         
-      // If it's a direct PDF, append parameters to hide the sidebar and toolbar for a clean view
+      // If it's a direct PDF (fallback iframe), append parameters to hide the sidebar and toolbar for a clean view
       if (isDirectPdf && !isGoogleDrive && pdfSrc) {
         pdfSrc = `${pdfSrc}#toolbar=0&navpanes=0&view=FitH`;
       }
@@ -220,17 +244,51 @@ const LessonPlayer = () => {
                 Retry
               </button>
             </div>
+          ) : isReactPdf ? (
+            <div 
+              className="w-100 flex-grow-1 overflow-auto custom-scrollbar py-4" 
+              style={{ backgroundColor: '#525659' }}
+              onContextMenu={(e) => e.preventDefault()}
+              ref={onRefChange}
+            >
+              <Document
+                file={secureUrl}
+                onLoadSuccess={({ numPages }) => {
+                  setNumPages(numPages);
+                  setLoading(false);
+                  setLoadError(null);
+                }}
+                onLoadError={(error) => {
+                  console.error('PDF load error:', error);
+                  setLoadError("Failed to load PDF. It might be corrupted or unavailable.");
+                  setLoading(false);
+                }}
+                loading={null}
+              >
+                {Array.from(new Array(numPages || 0), (el, index) => (
+                  <Page
+                    key={`page_${index + 1}`}
+                    pageNumber={index + 1}
+                    renderTextLayer={false}
+                    renderAnnotationLayer={false}
+                    width={containerWidth ? Math.min(containerWidth * 0.95, 800) : 800}
+                    className="react-pdf-page-wrapper mb-4"
+                  />
+                ))}
+              </Document>
+            </div>
           ) : (
-            <iframe
-              src={pdfSrc}
-              title={name}
-              className="w-100 flex-grow-1 border-0"
-              onLoad={() => setLoading(false)}
-              allowFullScreen
-            />
+            <>
+              <iframe
+                src={pdfSrc}
+                title={name}
+                className="w-100 flex-grow-1 border-0"
+                onLoad={() => setLoading(false)}
+                allowFullScreen
+              />
+              <div className="pdf-download-blocker" onContextMenu={(e) => e.preventDefault()}></div>
+            </>
           )}
-          {/* Overlay to prevent right-click download on PDF */}
-          <div className="pdf-download-blocker" onContextMenu={(e) => e.preventDefault()}></div>
         </div>
       )
     }

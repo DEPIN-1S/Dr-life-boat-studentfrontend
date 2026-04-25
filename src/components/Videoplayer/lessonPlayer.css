@@ -185,3 +185,17 @@
     max-width: 420px;
   }
 }
+
+/* React PDF Responsiveness */
+.react-pdf-page-wrapper {
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+}
+
+.react-pdf-page-wrapper canvas {
+  max-width: 100% !important;
+  height: auto !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+

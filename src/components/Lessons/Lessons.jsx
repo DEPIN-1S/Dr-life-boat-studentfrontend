@@ -127,14 +127,16 @@ const Lesson = () => {
               className="lesson-card p-4 bg-white shadow-sm rounded d-flex justify-content-between align-items-center"
               onClick={() => toggleModule(mIdx)}
             >
-              <div className="d-flex align-items-center">
+              <div className="d-flex align-items-center overflow-hidden pe-2" style={{ flex: 1 }}>
                 <SafeImage src={module.image} alt={module.name} />
-                <div className="ms-3">
-                  <h4 className="mb-1">{module.name}</h4>
+                <div className="ms-3 overflow-hidden">
+                  <h4 className="mb-1 text-wrap" style={{ wordBreak: 'break-word', fontSize: 'clamp(1rem, 4vw, 1.5rem)' }}>{module.name}</h4>
                   <small className="text-muted">{module.topics?.length || 0} Topics</small>
                 </div>
               </div>
-              {openModules.includes(mIdx) ? <FaChevronUp /> : <FaChevronDown />}
+              <div className="flex-shrink-0 ms-2">
+                {openModules.includes(mIdx) ? <FaChevronUp /> : <FaChevronDown />}
+              </div>
             </div>
 
             {openModules.includes(mIdx) && (
@@ -149,11 +151,13 @@ const Lesson = () => {
                         className="lesson-card p-3 bg-light rounded d-flex justify-content-between align-items-center"
                         onClick={() => toggleTopic(mIdx, tIdx)}
                       >
-                        <div className="d-flex align-items-center">
+                        <div className="d-flex align-items-center overflow-hidden pe-2" style={{ flex: 1 }}>
                           <SafeImage src={topic.image} alt={topic.name} />
-                          <h5 className="ms-3 mb-0">{topic.name}</h5>
+                          <h5 className="ms-3 mb-0 text-wrap" style={{ wordBreak: 'break-word', fontSize: 'clamp(0.9rem, 3.5vw, 1.25rem)' }}>{topic.name}</h5>
                         </div>
-                        {openTopics.includes(tKey) ? <FaChevronUp /> : <FaChevronDown />}
+                        <div className="flex-shrink-0 ms-2">
+                          {openTopics.includes(tKey) ? <FaChevronUp /> : <FaChevronDown />}
+                        </div>
                       </div>
 
                       {openTopics.includes(tKey) && (
@@ -167,11 +171,13 @@ const Lesson = () => {
                                   className="p-3 bg-white border rounded d-flex justify-content-between align-items-center"
                                   onClick={() => toggleSubtopic(mIdx, tIdx, sIdx)}
                                 >
-                                  <div className="d-flex align-items-center">
+                                  <div className="d-flex align-items-center overflow-hidden pe-2" style={{ flex: 1 }}>
                                     <SafeImage src={sub.image} alt={sub.name} />
-                                    <span className="ms-3">{sub.name}</span>
+                                    <span className="ms-3 text-wrap" style={{ wordBreak: 'break-word' }}>{sub.name}</span>
                                   </div>
-                                  {openSubtopics.includes(sKey) ? <FaChevronUp /> : <FaChevronDown />}
+                                  <div className="flex-shrink-0 ms-2">
+                                    {openSubtopics.includes(sKey) ? <FaChevronUp /> : <FaChevronDown />}
+                                  </div>
                                 </div>
                                 {openSubtopics.includes(sKey) && renderFiles(sub.files)}
                               </div>

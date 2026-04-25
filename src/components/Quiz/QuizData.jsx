@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from '../../utils/apiConfig';
+import { getImageUrl } from '../../utils/imageUrl';
 import { motion } from "framer-motion";
 import { Star, ChevronRight, Search, Loader2 } from "lucide-react";
 
@@ -173,7 +174,7 @@ export default function ModuleQuizzesView() {
                             key={q.q_id}
                             quiz={q}
                             index={i}
-                            src={`${API_BASE_URL}/${q.q_image}`}
+                            src={getImageUrl(q.q_image)}
                             onOpen={() => q.is_submitted ? navigate(`/quiz/result/${q.q_id}`) : navigate(`/quiz/start/${q.q_id}`)}
                           />
                         )

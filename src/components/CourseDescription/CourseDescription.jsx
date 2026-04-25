@@ -9,6 +9,7 @@ import { useParams } from 'react-router-dom'
 import VideoPlayer from '../VideoPlayer'
 
 import { API_BASE_URL } from '../../utils/apiConfig'
+import { getImageUrl } from '../../utils/imageUrl'
 
 const CourseCard = () => {
   const params = useParams()
@@ -171,7 +172,7 @@ const CourseCard = () => {
           ) : (
             <img
               className="course-description-image"
-              src={`${API_BASE_URL}/${courseDetails?.image}`}
+              src={getImageUrl(courseDetails?.image)}
               alt="Course"
             />
           )}

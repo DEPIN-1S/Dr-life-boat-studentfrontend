@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Camera, User, Mail, Phone, Globe, Save, X, Edit2 } from 'lucide-react';
 import { API_BASE_URL } from '../../utils/apiConfig';
+import { getImageUrl } from '../../utils/imageUrl';
 
 export default function StudentProfile() {
   const [profile, setProfile] = useState(null);
@@ -169,7 +170,7 @@ export default function StudentProfile() {
                     <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                   ) : profile?.s_profile_pic ? (
                     <img
-                      src={`${API_BASE_URL}${profile.s_profile_pic}`}
+                      src={getImageUrl(profile.s_profile_pic)}
                       alt={profile.s_name}
                       className="w-full h-full object-cover"
                       onError={(e) => {

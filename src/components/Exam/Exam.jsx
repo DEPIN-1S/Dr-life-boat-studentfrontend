@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { API_BASE_URL } from '../../utils/apiConfig';
+import { getImageUrl } from '../../utils/imageUrl';
 
 const Exam = () => {
   const navigate = useNavigate();
@@ -206,7 +207,7 @@ const Exam = () => {
                       <div className="mb-2">
                         {exam.ex_file ? (
                           <img
-                            src={`${baseUrl}/${exam.ex_file}`}
+                            src={getImageUrl(exam.ex_file)}
                             alt={exam.ex_name || 'Exam'}
                             style={{
                               width: '60px',

@@ -6,6 +6,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from '../../utils/apiConfig';
+import { getImageUrl } from '../../utils/imageUrl';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClipboardQuestion } from "@fortawesome/free-solid-svg-icons";
 
@@ -142,7 +143,7 @@ const QuizList = () => {
                     <div className="text-center text-white px-3">
                       {quiz.md_image ? (
                         <img
-                          src={`${API_BASE}/${quiz.md_image}`}
+                          src={getImageUrl(quiz.md_image)}
                           alt={quiz.md_name}
                           style={{
                             width: "70px",
