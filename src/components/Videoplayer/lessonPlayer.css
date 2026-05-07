@@ -199,3 +199,27 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+/* Fullscreen Mode Styles */
+.fullscreen-mode {
+  background-color: #525659 !important;
+  height: 100vh !important;
+  width: 100vw !important;
+  border-radius: 0 !important;
+}
+
+.fullscreen-mode .bg-light {
+  background-color: #f8f9fa !important;
+}
+
+.hover-scale {
+  transition: transform 0.2s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.15);
+}
+
+.btn-light.hover-scale:active {
+  transform: scale(0.95);
+}
+

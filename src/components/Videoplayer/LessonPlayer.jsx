@@ -27,6 +27,8 @@ const LessonPlayer = () => {
   const [loadError, setLoadError] = useState(null)
   const [numPages, setNumPages] = useState(null)
   const [containerWidth, setContainerWidth] = useState(null)
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const pdfContainerRef = React.useRef(null)
   const resizeObserverRef = React.useRef(null)
 
   const onRefChange = useCallback(node => {
@@ -106,10 +108,26 @@ const LessonPlayer = () => {
 
   // Cleanup blob URL on unmount
   useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement)
+    }
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
     return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange)
       if (pdfBlobUrl) URL.revokeObjectURL(pdfBlobUrl)
     }
   }, [pdfBlobUrl])
+
+  const toggleFullScreen = () => {
+    if (!pdfContainerRef.current) return
+    if (!document.fullscreenElement) {
+      pdfContainerRef.current.requestFullscreen().catch((err) => {
+        console.error(`Error attempting to enable full-screen mode: ${err.message}`)
+      })
+    } else {
+      document.exitFullscreen()
+    }
+  }
 
   if (!selectedFile || allFiles.length === 0) {
     return (
@@ -223,9 +241,20 @@ const LessonPlayer = () => {
       }
 
       return (
-        <div className="d-flex flex-column bg-white rounded shadow-sm overflow-hidden h-100 no-download-container" style={{ position: 'relative' }}>
-          <div className="p-3 bg-light border-bottom">
+        <div 
+          ref={pdfContainerRef}
+          className={`d-flex flex-column bg-white rounded shadow-sm overflow-hidden h-100 no-download-container ${isFullscreen ? 'fullscreen-mode' : ''}`} 
+          style={{ position: 'relative' }}
+        >
+          <div className="p-3 bg-light border-bottom d-flex align-items-center justify-content-between">
             <h6 className="mb-0 fw-bold text-truncate">{name}</h6>
+            <button 
+              className="btn btn-sm btn-light border-0 shadow-none hover-scale" 
+              onClick={toggleFullScreen}
+              title={isFullscreen ? "Exit Fullscreen" : "View Full Screen"}
+            >
+              <i className={`fas fa-${isFullscreen ? 'compress' : 'expand'} text-primary`}></i>
+            </button>
           </div>
           {loading && !loadError && (
             <div className="position-absolute top-50 start-50 translate-middle" style={{ zIndex: 10 }}>
@@ -271,7 +300,7 @@ const LessonPlayer = () => {
                     pageNumber={index + 1}
                     renderTextLayer={false}
                     renderAnnotationLayer={false}
-                    width={containerWidth ? Math.min(containerWidth * 0.95, 800) : 800}
+                    width={containerWidth ? Math.min(containerWidth * 0.95, isFullscreen ? 1400 : 800) : 800}
                     className="react-pdf-page-wrapper mb-4"
                   />
                 ))}
